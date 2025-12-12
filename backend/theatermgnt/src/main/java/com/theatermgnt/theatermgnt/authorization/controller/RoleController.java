@@ -2,11 +2,11 @@ package com.theatermgnt.theatermgnt.authorization.controller;
 
 import java.util.List;
 
+import com.theatermgnt.theatermgnt.authorization.service.RoleService;
 import org.springframework.web.bind.annotation.*;
 
 import com.theatermgnt.theatermgnt.authorization.dto.request.RoleRequest;
 import com.theatermgnt.theatermgnt.authorization.dto.response.RoleResponse;
-import com.theatermgnt.theatermgnt.authorization.service.RoleService;
 import com.theatermgnt.theatermgnt.common.dto.response.ApiResponse;
 
 import lombok.AccessLevel;

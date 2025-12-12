@@ -2,17 +2,16 @@ package com.theatermgnt.theatermgnt.notification.listener;
 
 import java.util.Map;
 
+import com.theatermgnt.theatermgnt.notification.service.EmailBuilderService;
+import com.theatermgnt.theatermgnt.notification.service.EmailService;
+import com.theatermgnt.theatermgnt.notification.service.EmailTemplateFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import com.theatermgnt.theatermgnt.authentication.event.PasswordResetEvent;
 import com.theatermgnt.theatermgnt.notification.dto.request.EmailBuilderRequest;
 import com.theatermgnt.theatermgnt.notification.enums.EmailType;
-import com.theatermgnt.theatermgnt.notification.service.EmailBuilderService;
-import com.theatermgnt.theatermgnt.notification.service.EmailService;
-import com.theatermgnt.theatermgnt.notification.service.EmailTemplateFactory;
 import com.theatermgnt.theatermgnt.staff.event.StaffCreatedEvent;
 
 import lombok.AccessLevel;
@@ -20,17 +19,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.event.EventListener;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
-import org.thymeleaf.TemplateEngine;
-import org.thymeleaf.context.Context;
-
-import java.time.Year;
-import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
