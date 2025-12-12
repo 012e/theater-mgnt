@@ -165,7 +165,7 @@ class GenreServiceImplTest {
         List<GenreResponse> res = genreService.getAllGenres();
         assertNotNull(res);
         assertEquals(1, res.size());
-        assertEquals(r.getId(), res.get(0).getId());
+        assertEquals(r.getId(), res.getFirst().getId());
 
         verify(genreRepository).findAll();
         verify(genreMapper).toGenreResponseList(List.of(g));

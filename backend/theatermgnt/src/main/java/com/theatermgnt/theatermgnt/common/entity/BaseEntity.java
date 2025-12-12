@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 
 import jakarta.persistence.*;
 
+import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -22,6 +23,7 @@ import lombok.experimental.FieldDefaults;
 @EntityListeners(AuditingEntityListener.class)
 @SQLDelete(sql = "UPDATE #{entityName} SET deleted = true WHERE id = ?")
 @Where(clause = "deleted = false")
+@SuperBuilder
 public abstract class BaseEntity implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

@@ -173,21 +173,21 @@ class MovieServiceImplTest {
     @Test
     void getMoviesByStatus_maps() {
         Movie m = new Movie(); m.setId("m");
-        when(movieRepository.findByStatus(MovieStatus.now_showing)).thenReturn(Arrays.asList(m));
+        when(movieRepository.findByStatus(MovieStatus.now_showing)).thenReturn(List.of(m));
         MovieSimpleResponse s = mock(MovieSimpleResponse.class);
         when(movieMapper.toMovieSimpleResponse(m)).thenReturn(s);
 
         List<MovieSimpleResponse> res = movieService.getMoviesByStatus(MovieStatus.now_showing);
         assertEquals(1, res.size());
-        assertSame(s, res.get(0));
+        assertSame(s, res.getFirst());
     }
 
     @Test
     void getNowShowingMovies_and_ComingSoonMovies_delegateToRepo() {
         Movie now = new Movie(); now.setId("n");
         Movie coming = new Movie(); coming.setId("c");
-        when(movieRepository.findNowShowingMovies(MovieStatus.now_showing)).thenReturn(Arrays.asList(now));
-        when(movieRepository.findComingSoonMovies(MovieStatus.coming_soon)).thenReturn(Arrays.asList(coming));
+        when(movieRepository.findNowShowingMovies(MovieStatus.now_showing)).thenReturn(List.of(now));
+        when(movieRepository.findComingSoonMovies(MovieStatus.coming_soon)).thenReturn(List.of(coming));
         when(movieMapper.toMovieSimpleResponse(now)).thenReturn(mock(MovieSimpleResponse.class));
         when(movieMapper.toMovieSimpleResponse(coming)).thenReturn(mock(MovieSimpleResponse.class));
 
@@ -198,7 +198,7 @@ class MovieServiceImplTest {
     @Test
     void searchMoviesByTitle_delegates() {
         Movie m = new Movie(); m.setId("s");
-        when(movieRepository.findByTitleContainingIgnoreCase("abc")).thenReturn(Arrays.asList(m));
+        when(movieRepository.findByTitleContainingIgnoreCase("abc")).thenReturn(List.of(m));
         when(movieMapper.toMovieSimpleResponse(m)).thenReturn(mock(MovieSimpleResponse.class));
         List<MovieSimpleResponse> res = movieService.searchMoviesByTitle("abc");
         assertEquals(1, res.size());
@@ -214,7 +214,7 @@ class MovieServiceImplTest {
     void getMoviesByGenre_success() {
         when(genreRepository.existsById("g")).thenReturn(true);
         Movie m = new Movie(); m.setId("mg");
-        when(movieRepository.findByGenreId("g")).thenReturn(Arrays.asList(m));
+        when(movieRepository.findByGenreId("g")).thenReturn(List.of(m));
         when(movieMapper.toMovieSimpleResponse(m)).thenReturn(mock(MovieSimpleResponse.class));
         List<MovieSimpleResponse> res = movieService.getMoviesByGenre("g");
         assertEquals(1, res.size());
@@ -274,7 +274,7 @@ class MovieServiceImplTest {
         when(movieRepository.save(m)).thenReturn(saved);
         when(movieMapper.toMovieResponse(saved)).thenReturn(mock(MovieResponse.class));
 
-        MovieResponse res = movieService.archiveMovie("a");
+        movieService.archiveMovie("a");
         verify(movieRepository).save(m);
         assertEquals(MovieStatus.archived, m.getStatus());
     }
