@@ -1,12 +1,12 @@
 package com.theatermgnt.theatermgnt.account.controller;
 
+import com.theatermgnt.theatermgnt.account.service.RegistrationService;
 import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.theatermgnt.theatermgnt.account.service.RegistrationService;
 import com.theatermgnt.theatermgnt.common.dto.response.ApiResponse;
 import com.theatermgnt.theatermgnt.customer.dto.request.CustomerAccountCreationRequest;
 import com.theatermgnt.theatermgnt.customer.dto.response.CustomerResponse;

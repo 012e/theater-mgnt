@@ -1,5 +1,6 @@
 package com.theatermgnt.theatermgnt.account.controller;
 
+import com.theatermgnt.theatermgnt.account.service.AccountService;
 import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.PostMapping;
@@ -8,7 +9,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.theatermgnt.theatermgnt.account.dto.request.PasswordCreationRequest;
-import com.theatermgnt.theatermgnt.account.service.AccountService;
 import com.theatermgnt.theatermgnt.common.dto.response.ApiResponse;
 
 import lombok.AccessLevel;
