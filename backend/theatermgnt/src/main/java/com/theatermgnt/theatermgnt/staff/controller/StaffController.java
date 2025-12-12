@@ -2,17 +2,17 @@ package com.theatermgnt.theatermgnt.staff.controller;
 
 import java.util.List;
 
-import com.theatermgnt.theatermgnt.account.service.RegistrationService;
-import com.theatermgnt.theatermgnt.staff.service.StaffService;
 import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.*;
 
+import com.theatermgnt.theatermgnt.account.service.RegistrationService;
 import com.theatermgnt.theatermgnt.common.dto.response.ApiResponse;
 import com.theatermgnt.theatermgnt.staff.dto.request.SearchStaffRequest;
 import com.theatermgnt.theatermgnt.staff.dto.request.StaffAccountCreationRequest;
 import com.theatermgnt.theatermgnt.staff.dto.request.StaffProfileUpdateRequest;
 import com.theatermgnt.theatermgnt.staff.dto.response.StaffResponse;
+import com.theatermgnt.theatermgnt.staff.service.StaffService;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -62,8 +62,6 @@ public class StaffController {
                 .result(staffService.searchStaff(request))
                 .build();
     }
-
-
 
     @PutMapping("/{staffId}")
     public ApiResponse<StaffResponse> updateStaffProfile(

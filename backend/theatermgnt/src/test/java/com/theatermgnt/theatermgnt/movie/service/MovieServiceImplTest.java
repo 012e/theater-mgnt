@@ -85,8 +85,10 @@ class MovieServiceImplTest {
         AgeRating ageRating = new AgeRating();
         ageRating.setId(ageId);
 
-        Genre genre1 = new Genre(); genre1.setId(g1);
-        Genre genre2 = new Genre(); genre2.setId(g2);
+        Genre genre1 = new Genre();
+        genre1.setId(g1);
+        Genre genre2 = new Genre();
+        genre2.setId(g2);
 
         Movie mappedMovie = new Movie();
         mappedMovie.setTitle("Test Title");
@@ -138,8 +140,10 @@ class MovieServiceImplTest {
     // ========== READ ==========
     @Test
     void getAllMovies_returnsMappedList() {
-        Movie m1 = new Movie(); m1.setId("m1");
-        Movie m2 = new Movie(); m2.setId("m2");
+        Movie m1 = new Movie();
+        m1.setId("m1");
+        Movie m2 = new Movie();
+        m2.setId("m2");
 
         when(movieRepository.findAllWithGenres()).thenReturn(Arrays.asList(m1, m2));
 
@@ -155,7 +159,8 @@ class MovieServiceImplTest {
 
     @Test
     void getMovieById_exists_returnsMapped() {
-        Movie m = new Movie(); m.setId("mid");
+        Movie m = new Movie();
+        m.setId("mid");
         when(movieRepository.findById("mid")).thenReturn(Optional.of(m));
         MovieResponse r = mock(MovieResponse.class);
         when(movieMapper.toMovieResponse(m)).thenReturn(r);
@@ -172,7 +177,8 @@ class MovieServiceImplTest {
 
     @Test
     void getMoviesByStatus_maps() {
-        Movie m = new Movie(); m.setId("m");
+        Movie m = new Movie();
+        m.setId("m");
         when(movieRepository.findByStatus(MovieStatus.now_showing)).thenReturn(List.of(m));
         MovieSimpleResponse s = mock(MovieSimpleResponse.class);
         when(movieMapper.toMovieSimpleResponse(m)).thenReturn(s);
@@ -184,8 +190,10 @@ class MovieServiceImplTest {
 
     @Test
     void getNowShowingMovies_and_ComingSoonMovies_delegateToRepo() {
-        Movie now = new Movie(); now.setId("n");
-        Movie coming = new Movie(); coming.setId("c");
+        Movie now = new Movie();
+        now.setId("n");
+        Movie coming = new Movie();
+        coming.setId("c");
         when(movieRepository.findNowShowingMovies(MovieStatus.now_showing)).thenReturn(List.of(now));
         when(movieRepository.findComingSoonMovies(MovieStatus.coming_soon)).thenReturn(List.of(coming));
         when(movieMapper.toMovieSimpleResponse(now)).thenReturn(mock(MovieSimpleResponse.class));
@@ -197,7 +205,8 @@ class MovieServiceImplTest {
 
     @Test
     void searchMoviesByTitle_delegates() {
-        Movie m = new Movie(); m.setId("s");
+        Movie m = new Movie();
+        m.setId("s");
         when(movieRepository.findByTitleContainingIgnoreCase("abc")).thenReturn(List.of(m));
         when(movieMapper.toMovieSimpleResponse(m)).thenReturn(mock(MovieSimpleResponse.class));
         List<MovieSimpleResponse> res = movieService.searchMoviesByTitle("abc");
@@ -213,7 +222,8 @@ class MovieServiceImplTest {
     @Test
     void getMoviesByGenre_success() {
         when(genreRepository.existsById("g")).thenReturn(true);
-        Movie m = new Movie(); m.setId("mg");
+        Movie m = new Movie();
+        m.setId("mg");
         when(movieRepository.findByGenreId("g")).thenReturn(List.of(m));
         when(movieMapper.toMovieSimpleResponse(m)).thenReturn(mock(MovieSimpleResponse.class));
         List<MovieSimpleResponse> res = movieService.getMoviesByGenre("g");
@@ -224,14 +234,14 @@ class MovieServiceImplTest {
     @Test
     void updateMovie_notFound_throws() {
         UpdateMovieRequest req = createUpdateRequest(null, null);
-        when(movieRepository.findById("no"))
-            .thenReturn(Optional.empty());
+        when(movieRepository.findById("no")).thenReturn(Optional.empty());
         assertThrows(AppException.class, () -> movieService.updateMovie("no", req));
     }
 
     @Test
     void updateMovie_updatesAgeRatingAndGenres_whenProvided() {
-        Movie existing = new Movie(); existing.setId("e");
+        Movie existing = new Movie();
+        existing.setId("e");
         when(movieRepository.findById("e")).thenReturn(Optional.of(existing));
 
         // Prepare request with ageRating and genres
@@ -240,9 +250,12 @@ class MovieServiceImplTest {
         String g2 = "g2";
         UpdateMovieRequest req = createUpdateRequest(newAgeId, new HashSet<>(Arrays.asList(g1, g2)));
 
-        AgeRating newAge = new AgeRating(); newAge.setId(newAgeId);
-        Genre gen1 = new Genre(); gen1.setId(g1);
-        Genre gen2 = new Genre(); gen2.setId(g2);
+        AgeRating newAge = new AgeRating();
+        newAge.setId(newAgeId);
+        Genre gen1 = new Genre();
+        gen1.setId(g1);
+        Genre gen2 = new Genre();
+        gen2.setId(g2);
 
         when(ageRatingRepository.findById(newAgeId)).thenReturn(Optional.of(newAge));
         when(genreRepository.findById(g1)).thenReturn(Optional.of(gen1));
@@ -251,7 +264,8 @@ class MovieServiceImplTest {
         // movieMapper.updateMovieFromRequest is void - just verify it's called
         doNothing().when(movieMapper).updateMovieFromRequest(eq(req), eq(existing));
 
-        Movie saved = new Movie(); saved.setId("e");
+        Movie saved = new Movie();
+        saved.setId("e");
         when(movieRepository.save(existing)).thenReturn(saved);
         when(movieMapper.toMovieResponse(saved)).thenReturn(mock(MovieResponse.class));
 
@@ -268,9 +282,12 @@ class MovieServiceImplTest {
 
     @Test
     void archiveMovie_setsStatusArchived() {
-        Movie m = new Movie(); m.setId("a");
+        Movie m = new Movie();
+        m.setId("a");
         when(movieRepository.findById("a")).thenReturn(Optional.of(m));
-        Movie saved = new Movie(); saved.setId("a"); saved.setStatus(MovieStatus.archived);
+        Movie saved = new Movie();
+        saved.setId("a");
+        saved.setStatus(MovieStatus.archived);
         when(movieRepository.save(m)).thenReturn(saved);
         when(movieMapper.toMovieResponse(saved)).thenReturn(mock(MovieResponse.class));
 
@@ -288,7 +305,8 @@ class MovieServiceImplTest {
 
     @Test
     void deleteMovie_success_deletes() {
-        Movie m = new Movie(); m.setId("del");
+        Movie m = new Movie();
+        m.setId("del");
         when(movieRepository.findById("del")).thenReturn(Optional.of(m));
         doNothing().when(movieRepository).delete(m);
 

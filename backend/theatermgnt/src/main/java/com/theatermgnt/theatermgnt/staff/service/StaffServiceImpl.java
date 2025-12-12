@@ -76,15 +76,13 @@ public class StaffServiceImpl implements StaffService {
         return staffMapper.toStaffResponse(staff);
     }
 
-//    /// SEARCH STAFF BY NAME/EMAIL/PHONE
-@Override
-public List<StaffResponse> searchStaff(SearchStaffRequest request) {
-        List<Staff> staffs = staffRepository.findAllByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(request.getKeyword(), request.getKeyword());
-        return staffs.stream()
-                .map(staffMapper::toStaffResponse)
-                .toList();
+    //    /// SEARCH STAFF BY NAME/EMAIL/PHONE
+    @Override
+    public List<StaffResponse> searchStaff(SearchStaffRequest request) {
+        List<Staff> staffs = staffRepository.findAllByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(
+                request.getKeyword(), request.getKeyword());
+        return staffs.stream().map(staffMapper::toStaffResponse).toList();
     }
-
 
     /// UPDATE STAFF PROFILE
     @Override

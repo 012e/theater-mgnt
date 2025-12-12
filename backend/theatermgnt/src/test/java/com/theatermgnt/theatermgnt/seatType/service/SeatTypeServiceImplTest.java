@@ -10,7 +10,6 @@ import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,6 +21,8 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import com.theatermgnt.theatermgnt.common.exception.AppException;
 import com.theatermgnt.theatermgnt.common.exception.ErrorCode;
@@ -31,8 +32,6 @@ import com.theatermgnt.theatermgnt.seatType.dto.response.SeatTypeResponse;
 import com.theatermgnt.theatermgnt.seatType.entity.SeatType;
 import com.theatermgnt.theatermgnt.seatType.mapper.SeatTypeMapper;
 import com.theatermgnt.theatermgnt.seatType.repository.SeatTypeRepository;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -54,14 +53,16 @@ class SeatTypeServiceImplTest {
     void setUp() {
         // default mapper update behavior: copy fields
         doAnswer(invocation -> {
-            SeatType target = invocation.getArgument(0);
-            SeatTypeUpdateRequest req = invocation.getArgument(1);
-            if (req != null) {
-                target.setTypeName(req.getTypeName());
-                target.setBasePriceModifier(BigDecimal.valueOf(req.getBasePriceModifier()));
-            }
-            return null;
-        }).when(seatTypeMapper).updateSeatType(any(SeatType.class), any(SeatTypeUpdateRequest.class));
+                    SeatType target = invocation.getArgument(0);
+                    SeatTypeUpdateRequest req = invocation.getArgument(1);
+                    if (req != null) {
+                        target.setTypeName(req.getTypeName());
+                        target.setBasePriceModifier(BigDecimal.valueOf(req.getBasePriceModifier()));
+                    }
+                    return null;
+                })
+                .when(seatTypeMapper)
+                .updateSeatType(any(SeatType.class), any(SeatTypeUpdateRequest.class));
     }
 
     @Test
@@ -71,9 +72,20 @@ class SeatTypeServiceImplTest {
                 .basePriceModifier(2.5)
                 .build();
 
-        SeatType mapped = SeatType.builder().typeName("VIP").basePriceModifier(BigDecimal.valueOf(2.5)).build();
-        SeatType saved = SeatType.builder().id("st1").typeName("VIP").basePriceModifier(BigDecimal.valueOf(2.5)).build();
-        SeatTypeResponse resp = SeatTypeResponse.builder().id("st1").typeName("VIP").basePriceModifier(BigDecimal.valueOf(2.5)).build();
+        SeatType mapped = SeatType.builder()
+                .typeName("VIP")
+                .basePriceModifier(BigDecimal.valueOf(2.5))
+                .build();
+        SeatType saved = SeatType.builder()
+                .id("st1")
+                .typeName("VIP")
+                .basePriceModifier(BigDecimal.valueOf(2.5))
+                .build();
+        SeatTypeResponse resp = SeatTypeResponse.builder()
+                .id("st1")
+                .typeName("VIP")
+                .basePriceModifier(BigDecimal.valueOf(2.5))
+                .build();
 
         when(seatTypeRepository.existsByTypeName("VIP")).thenReturn(false);
         when(seatTypeMapper.toSeatType(req)).thenReturn(mapped);
@@ -93,7 +105,10 @@ class SeatTypeServiceImplTest {
 
     @Test
     void createSeatType_whenExist_thenThrow() {
-        SeatTypeCreationRequest req = SeatTypeCreationRequest.builder().typeName("VIP").basePriceModifier(1.0).build();
+        SeatTypeCreationRequest req = SeatTypeCreationRequest.builder()
+                .typeName("VIP")
+                .basePriceModifier(1.0)
+                .build();
         when(seatTypeRepository.existsByTypeName(anyString())).thenReturn(true);
         AppException ex = assertThrows(AppException.class, () -> seatTypeService.createSeatType(req));
         assertEquals(ErrorCode.SEATTYPE_EXISTED, ex.getErrorCode());
@@ -101,11 +116,27 @@ class SeatTypeServiceImplTest {
 
     @Test
     void getSeatTypes_returnsMappedList() {
-        SeatType s1 = SeatType.builder().id("a").typeName("A").basePriceModifier(BigDecimal.ONE).build();
-        SeatType s2 = SeatType.builder().id("b").typeName("B").basePriceModifier(BigDecimal.valueOf(1.5)).build();
+        SeatType s1 = SeatType.builder()
+                .id("a")
+                .typeName("A")
+                .basePriceModifier(BigDecimal.ONE)
+                .build();
+        SeatType s2 = SeatType.builder()
+                .id("b")
+                .typeName("B")
+                .basePriceModifier(BigDecimal.valueOf(1.5))
+                .build();
 
-        SeatTypeResponse r1 = SeatTypeResponse.builder().id("a").typeName("A").basePriceModifier(BigDecimal.ONE).build();
-        SeatTypeResponse r2 = SeatTypeResponse.builder().id("b").typeName("B").basePriceModifier(BigDecimal.valueOf(1.5)).build();
+        SeatTypeResponse r1 = SeatTypeResponse.builder()
+                .id("a")
+                .typeName("A")
+                .basePriceModifier(BigDecimal.ONE)
+                .build();
+        SeatTypeResponse r2 = SeatTypeResponse.builder()
+                .id("b")
+                .typeName("B")
+                .basePriceModifier(BigDecimal.valueOf(1.5))
+                .build();
 
         when(seatTypeRepository.findAll()).thenReturn(Arrays.asList(s1, s2));
         when(seatTypeMapper.toSeatTypeResponse(s1)).thenReturn(r1);
@@ -121,8 +152,16 @@ class SeatTypeServiceImplTest {
 
     @Test
     void getSeatType_found_returnsMapped() {
-        SeatType s = SeatType.builder().id("x").typeName("X").basePriceModifier(BigDecimal.TEN).build();
-        SeatTypeResponse r = SeatTypeResponse.builder().id("x").typeName("X").basePriceModifier(BigDecimal.TEN).build();
+        SeatType s = SeatType.builder()
+                .id("x")
+                .typeName("X")
+                .basePriceModifier(BigDecimal.TEN)
+                .build();
+        SeatTypeResponse r = SeatTypeResponse.builder()
+                .id("x")
+                .typeName("X")
+                .basePriceModifier(BigDecimal.TEN)
+                .build();
 
         when(seatTypeRepository.findById("x")).thenReturn(Optional.of(s));
         when(seatTypeMapper.toSeatTypeResponse(s)).thenReturn(r);
@@ -147,11 +186,26 @@ class SeatTypeServiceImplTest {
 
     @Test
     void updateSeatType_success() {
-        SeatType existing = SeatType.builder().id("u1").typeName("Old").basePriceModifier(BigDecimal.ONE).build();
-        SeatType saved = SeatType.builder().id("u1").typeName("New").basePriceModifier(BigDecimal.valueOf(3.0)).build();
-        SeatTypeResponse resp = SeatTypeResponse.builder().id("u1").typeName("New").basePriceModifier(BigDecimal.valueOf(3.0)).build();
+        SeatType existing = SeatType.builder()
+                .id("u1")
+                .typeName("Old")
+                .basePriceModifier(BigDecimal.ONE)
+                .build();
+        SeatType saved = SeatType.builder()
+                .id("u1")
+                .typeName("New")
+                .basePriceModifier(BigDecimal.valueOf(3.0))
+                .build();
+        SeatTypeResponse resp = SeatTypeResponse.builder()
+                .id("u1")
+                .typeName("New")
+                .basePriceModifier(BigDecimal.valueOf(3.0))
+                .build();
 
-        SeatTypeUpdateRequest req = SeatTypeUpdateRequest.builder().typeName("New").basePriceModifier(3.0).build();
+        SeatTypeUpdateRequest req = SeatTypeUpdateRequest.builder()
+                .typeName("New")
+                .basePriceModifier(3.0)
+                .build();
 
         when(seatTypeRepository.findById("u1")).thenReturn(Optional.of(existing));
         // mapper.updateSeatType will be executed via doAnswer in setUp
@@ -171,9 +225,11 @@ class SeatTypeServiceImplTest {
     @Test
     void updateSeatType_notFound_throws() {
         when(seatTypeRepository.findById("nope")).thenReturn(Optional.empty());
-        SeatTypeUpdateRequest req = SeatTypeUpdateRequest.builder().typeName("Any").basePriceModifier(1.0).build();
+        SeatTypeUpdateRequest req = SeatTypeUpdateRequest.builder()
+                .typeName("Any")
+                .basePriceModifier(1.0)
+                .build();
         AppException ex = assertThrows(AppException.class, () -> seatTypeService.updateSeatType("nope", req));
         assertEquals(ErrorCode.SEATTYPE_NOT_EXISTED, ex.getErrorCode());
     }
 }
-

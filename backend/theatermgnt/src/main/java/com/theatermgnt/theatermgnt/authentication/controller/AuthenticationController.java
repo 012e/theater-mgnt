@@ -2,7 +2,6 @@ package com.theatermgnt.theatermgnt.authentication.controller;
 
 import java.text.ParseException;
 
-import com.theatermgnt.theatermgnt.authentication.service.AuthenticationService;
 import org.springframework.web.bind.annotation.*;
 
 import com.nimbusds.jose.JOSEException;
@@ -12,6 +11,7 @@ import com.theatermgnt.theatermgnt.authentication.dto.request.LogoutRequest;
 import com.theatermgnt.theatermgnt.authentication.dto.request.RefreshTokenRequest;
 import com.theatermgnt.theatermgnt.authentication.dto.response.AuthenticationResponse;
 import com.theatermgnt.theatermgnt.authentication.dto.response.IntrospectResponse;
+import com.theatermgnt.theatermgnt.authentication.service.AuthenticationService;
 import com.theatermgnt.theatermgnt.common.dto.response.ApiResponse;
 
 import lombok.AccessLevel;

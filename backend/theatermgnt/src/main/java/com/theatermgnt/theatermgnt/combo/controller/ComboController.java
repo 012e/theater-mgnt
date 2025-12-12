@@ -2,7 +2,6 @@ package com.theatermgnt.theatermgnt.combo.controller;
 
 import java.util.List;
 
-import com.theatermgnt.theatermgnt.combo.service.ComboService;
 import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.*;
@@ -10,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import com.theatermgnt.theatermgnt.combo.dto.request.ComboCreationRequest;
 import com.theatermgnt.theatermgnt.combo.dto.request.ComboUpdateRequest;
 import com.theatermgnt.theatermgnt.combo.dto.response.ComboResponse;
+import com.theatermgnt.theatermgnt.combo.service.ComboService;
 import com.theatermgnt.theatermgnt.common.dto.response.ApiResponse;
 
 import lombok.AccessLevel;

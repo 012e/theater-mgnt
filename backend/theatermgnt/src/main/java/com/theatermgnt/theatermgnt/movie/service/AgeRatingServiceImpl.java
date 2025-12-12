@@ -2,10 +2,10 @@ package com.theatermgnt.theatermgnt.movie.service;
 
 import java.util.List;
 
-import com.theatermgnt.theatermgnt.common.exception.AppException;
-import com.theatermgnt.theatermgnt.common.exception.ErrorCode;
 import org.springframework.stereotype.Service;
 
+import com.theatermgnt.theatermgnt.common.exception.AppException;
+import com.theatermgnt.theatermgnt.common.exception.ErrorCode;
 import com.theatermgnt.theatermgnt.movie.dto.request.CreateAgeRatingRequest;
 import com.theatermgnt.theatermgnt.movie.dto.response.AgeRatingResponse;
 import com.theatermgnt.theatermgnt.movie.entity.AgeRating;
@@ -54,9 +54,8 @@ public class AgeRatingServiceImpl implements AgeRatingService {
 
     @Override
     public AgeRatingResponse getAgeRatingById(String id) {
-        AgeRating ageRating = ageRatingRepository
-                .findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.AGERATING_NOT_EXISTED));
+        AgeRating ageRating =
+                ageRatingRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.AGERATING_NOT_EXISTED));
         return ageRatingMapper.toAgeRatingResponse(ageRating);
     }
 

@@ -6,6 +6,13 @@ import static org.mockito.Mockito.*;
 import java.util.List;
 import java.util.Optional;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import com.theatermgnt.theatermgnt.common.exception.AppException;
 import com.theatermgnt.theatermgnt.common.exception.ErrorCode;
 import com.theatermgnt.theatermgnt.movie.dto.request.CreateAgeRatingRequest;
@@ -13,12 +20,6 @@ import com.theatermgnt.theatermgnt.movie.dto.response.AgeRatingResponse;
 import com.theatermgnt.theatermgnt.movie.entity.AgeRating;
 import com.theatermgnt.theatermgnt.movie.mapper.AgeRatingMapper;
 import com.theatermgnt.theatermgnt.movie.repository.AgeRatingRepository;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class AgeRatingServiceImplTest {
@@ -103,7 +104,8 @@ class AgeRatingServiceImplTest {
     @Test
     void createAgeRating_codeAlreadyExists_throwsAppException() {
         when(ageRatingRepository.existsById(request.getId())).thenReturn(false);
-        when(ageRatingRepository.findByCode(request.getCode())).thenReturn(Optional.of(AgeRating.builder().build()));
+        when(ageRatingRepository.findByCode(request.getCode()))
+                .thenReturn(Optional.of(AgeRating.builder().build()));
 
         AppException ex = assertThrows(AppException.class, () -> ageRatingService.createAgeRating(request));
         assertEquals(ErrorCode.AGERATING_CODE_EXISTED, ex.getErrorCode());
@@ -119,12 +121,21 @@ class AgeRatingServiceImplTest {
         // Arrange
         AgeRating a1 = AgeRating.builder().code("G").description("General").build();
         a1.setId("id-1");
-        AgeRating a2 = AgeRating.builder().code("PG").description("Parental Guidance").build();
+        AgeRating a2 =
+                AgeRating.builder().code("PG").description("Parental Guidance").build();
         a2.setId("id-2");
 
         List<AgeRating> list = List.of(a1, a2);
-        AgeRatingResponse r1 = AgeRatingResponse.builder().id(a1.getId()).code(a1.getCode()).description(a1.getDescription()).build();
-        AgeRatingResponse r2 = AgeRatingResponse.builder().id(a2.getId()).code(a2.getCode()).description(a2.getDescription()).build();
+        AgeRatingResponse r1 = AgeRatingResponse.builder()
+                .id(a1.getId())
+                .code(a1.getCode())
+                .description(a1.getDescription())
+                .build();
+        AgeRatingResponse r2 = AgeRatingResponse.builder()
+                .id(a2.getId())
+                .code(a2.getCode())
+                .description(a2.getDescription())
+                .build();
         List<AgeRatingResponse> respList = List.of(r1, r2);
 
         when(ageRatingRepository.findAll()).thenReturn(list);
@@ -146,7 +157,11 @@ class AgeRatingServiceImplTest {
     void getAgeRatingById_found_returnsMappedResponse() {
         AgeRating a = AgeRating.builder().code("G").description("General").build();
         a.setId("id-10");
-        AgeRatingResponse resp = AgeRatingResponse.builder().id(a.getId()).code(a.getCode()).description(a.getDescription()).build();
+        AgeRatingResponse resp = AgeRatingResponse.builder()
+                .id(a.getId())
+                .code(a.getCode())
+                .description(a.getDescription())
+                .build();
 
         when(ageRatingRepository.findById(a.getId())).thenReturn(Optional.of(a));
         when(ageRatingMapper.toAgeRatingResponse(a)).thenReturn(resp);
@@ -175,7 +190,11 @@ class AgeRatingServiceImplTest {
     void getAgeRatingByCode_found_returnsMappedResponse() {
         AgeRating a = AgeRating.builder().code("R").description("Restricted").build();
         a.setId("id-20");
-        AgeRatingResponse resp = AgeRatingResponse.builder().id(a.getId()).code(a.getCode()).description(a.getDescription()).build();
+        AgeRatingResponse resp = AgeRatingResponse.builder()
+                .id(a.getId())
+                .code(a.getCode())
+                .description(a.getDescription())
+                .build();
 
         when(ageRatingRepository.findByCode(a.getCode())).thenReturn(Optional.of(a));
         when(ageRatingMapper.toAgeRatingResponse(a)).thenReturn(resp);
@@ -200,4 +219,3 @@ class AgeRatingServiceImplTest {
         verify(ageRatingMapper, never()).toAgeRatingResponse(any());
     }
 }
-

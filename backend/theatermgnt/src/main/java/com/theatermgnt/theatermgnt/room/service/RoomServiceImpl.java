@@ -2,8 +2,8 @@ package com.theatermgnt.theatermgnt.room.service;
 
 import java.util.List;
 
-import com.theatermgnt.theatermgnt.seat.service.SeatService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.theatermgnt.theatermgnt.cinema.entity.Cinema;
 import com.theatermgnt.theatermgnt.cinema.repository.CinemaRepository;
@@ -15,12 +15,12 @@ import com.theatermgnt.theatermgnt.room.dto.response.RoomResponse;
 import com.theatermgnt.theatermgnt.room.entity.Room;
 import com.theatermgnt.theatermgnt.room.mapper.RoomMapper;
 import com.theatermgnt.theatermgnt.room.repository.RoomRepository;
+import com.theatermgnt.theatermgnt.seat.service.SeatService;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -31,7 +31,6 @@ public class RoomServiceImpl implements RoomService {
     CinemaRepository cinemasRepository;
     RoomMapper roomMapper;
     SeatService seatService;
-
 
     @Transactional
     @Override
@@ -48,7 +47,7 @@ public class RoomServiceImpl implements RoomService {
         room.setCinema(cinema);
         Room savedRoom = roomRepository.save(room);
 
-        if(request.getSeats() != null) {
+        if (request.getSeats() != null) {
             seatService.syncSeats(room, request.getSeats());
         }
 
@@ -58,20 +57,20 @@ public class RoomServiceImpl implements RoomService {
     @Transactional
     @Override
     public RoomResponse updateRoom(String roomId, RoomUpdateRequest request) {
-        Room room = roomRepository.findById(roomId)
-                .orElseThrow(() -> new AppException(ErrorCode.ROOM_NOT_EXISTED));
+        Room room = roomRepository.findById(roomId).orElseThrow(() -> new AppException(ErrorCode.ROOM_NOT_EXISTED));
 
         // Validation: Check if the room has screening from now to future
-//        boolean isRoomBusy = screeningRepository.existsByRoomIdAndStartTimeAfter(roomId, LocalDateTime.now());
+        //        boolean isRoomBusy = screeningRepository.existsByRoomIdAndStartTimeAfter(roomId, LocalDateTime.now());
 
         // Update room
-        roomMapper.updateRoom(room,request);
+        roomMapper.updateRoom(room, request);
 
-        if(request.getName() != null && roomRepository.existsByNameAndCinemaIdAndIdNot(request.getName(),
-                room.getCinema().getId(), roomId)) {
+        if (request.getName() != null
+                && roomRepository.existsByNameAndCinemaIdAndIdNot(
+                        request.getName(), room.getCinema().getId(), roomId)) {
             throw new AppException(ErrorCode.ROOM_EXISTED);
         }
-        if(request.getSeats() != null) {
+        if (request.getSeats() != null) {
             seatService.syncSeats(room, request.getSeats());
         }
 
@@ -96,8 +95,6 @@ public class RoomServiceImpl implements RoomService {
         Room room = roomRepository.findById(roomId).orElseThrow(() -> new AppException(ErrorCode.ROOM_NOT_EXISTED));
         return roomMapper.toRoomResponseWithSeats(room);
     }
-
-
 
     @Override
     public void deleteRoom(String roomId) {

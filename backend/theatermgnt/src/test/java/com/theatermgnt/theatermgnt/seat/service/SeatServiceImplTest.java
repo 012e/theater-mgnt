@@ -3,13 +3,11 @@ package com.theatermgnt.theatermgnt.seat.service;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -23,7 +21,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
@@ -64,20 +61,24 @@ class SeatServiceImplTest {
 
         // default mapper behavior: copy primitive fields from request to seat
         doAnswer((Answer<Void>) invocation -> {
-            Seat seat = invocation.getArgument(0);
-            SeatRequest req = invocation.getArgument(1);
-            if (req != null) {
-                seat.setRowChair(req.getRowChair());
-                seat.setSeatNumber(req.getSeatNumber());
-            }
-            return null;
-        }).when(seatMapper).updateSeat(any(Seat.class), any(SeatRequest.class));
+                    Seat seat = invocation.getArgument(0);
+                    SeatRequest req = invocation.getArgument(1);
+                    if (req != null) {
+                        seat.setRowChair(req.getRowChair());
+                        seat.setSeatNumber(req.getSeatNumber());
+                    }
+                    return null;
+                })
+                .when(seatMapper)
+                .updateSeat(any(Seat.class), any(SeatRequest.class));
 
         // default saveAll behavior: return the incoming list as result
         doAnswer(invocation -> {
-            // return same list
-            return invocation.getArgument(0);
-        }).when(seatRepository).saveAll(anyList());
+                    // return same list
+                    return invocation.getArgument(0);
+                })
+                .when(seatRepository)
+                .saveAll(anyList());
     }
 
     @Test
@@ -88,8 +89,18 @@ class SeatServiceImplTest {
         List<Seat> currentSeats = Collections.emptyList();
         when(seatRepository.findByRoomId("room1")).thenReturn(currentSeats);
 
-        SeatRequest r1 = SeatRequest.builder().id(null).rowChair("A").seatNumber(1).seatTypeId("t1").build();
-        SeatRequest r2 = SeatRequest.builder().id(null).rowChair("B").seatNumber(2).seatTypeId("t2").build();
+        SeatRequest r1 = SeatRequest.builder()
+                .id(null)
+                .rowChair("A")
+                .seatNumber(1)
+                .seatTypeId("t1")
+                .build();
+        SeatRequest r2 = SeatRequest.builder()
+                .id(null)
+                .rowChair("B")
+                .seatNumber(2)
+                .seatTypeId("t2")
+                .build();
         List<SeatRequest> requests = Arrays.asList(r1, r2);
 
         // prepare seat types
@@ -136,7 +147,12 @@ class SeatServiceImplTest {
         List<Seat> currentSeats = Arrays.asList(existing);
         when(seatRepository.findByRoomId("room1")).thenReturn(currentSeats);
 
-        SeatRequest req = SeatRequest.builder().id("s1").rowChair("A-updated").seatNumber(10).seatTypeId("t1").build();
+        SeatRequest req = SeatRequest.builder()
+                .id("s1")
+                .rowChair("A-updated")
+                .seatNumber(10)
+                .seatTypeId("t1")
+                .build();
 
         SeatType t1 = SeatType.builder().id("t1").typeName("TYPE1").build();
         when(seatTypeRepository.findAllById(any())).thenReturn(Arrays.asList(t1));
@@ -176,7 +192,12 @@ class SeatServiceImplTest {
         when(seatRepository.findByRoomId("room1")).thenReturn(currentSeats);
 
         // only send request for s1, omit s2 -> s2 should be deleted
-        SeatRequest req = SeatRequest.builder().id("s1").rowChair("A").seatNumber(1).seatTypeId("t1").build();
+        SeatRequest req = SeatRequest.builder()
+                .id("s1")
+                .rowChair("A")
+                .seatNumber(1)
+                .seatTypeId("t1")
+                .build();
         SeatType t1 = SeatType.builder().id("t1").typeName("TYPE1").build();
         when(seatTypeRepository.findAllById(any())).thenReturn(Arrays.asList(t1));
         when(seatRepository.countByRoomId("room1")).thenReturn(1L);
@@ -230,12 +251,18 @@ class SeatServiceImplTest {
         Room room = new Room();
         room.setId("r1");
 
-        SeatRequest req = SeatRequest.builder().id(null).rowChair("A").seatNumber(1).seatTypeId("missing").build();
+        SeatRequest req = SeatRequest.builder()
+                .id(null)
+                .rowChair("A")
+                .seatNumber(1)
+                .seatTypeId("missing")
+                .build();
 
         Map<String, SeatType> emptyMap = new HashMap<>();
         Map<String, Seat> currentMap = new HashMap<>();
 
-        AppException ex = assertThrows(AppException.class, () -> seatService.mapRequestToSeat(req, room, emptyMap, currentMap));
+        AppException ex =
+                assertThrows(AppException.class, () -> seatService.mapRequestToSeat(req, room, emptyMap, currentMap));
         assertEquals(ErrorCode.SEATTYPE_NOT_EXISTED, ex.getErrorCode());
     }
 
@@ -253,7 +280,12 @@ class SeatServiceImplTest {
         Map<String, Seat> currentMap = new HashMap<>();
         currentMap.put("s1", existing);
 
-        SeatRequest req = SeatRequest.builder().id("s1").rowChair("X").seatNumber(99).seatTypeId("t1").build();
+        SeatRequest req = SeatRequest.builder()
+                .id("s1")
+                .rowChair("X")
+                .seatNumber(99)
+                .seatTypeId("t1")
+                .build();
 
         SeatType t1 = SeatType.builder().id("t1").typeName("TYPE1").build();
         Map<String, SeatType> seatTypeMap = Collections.singletonMap("t1", t1);
@@ -276,7 +308,12 @@ class SeatServiceImplTest {
         room.setId("r1");
 
         Map<String, Seat> currentMap = new HashMap<>();
-        SeatRequest req = SeatRequest.builder().id(null).rowChair("Z").seatNumber(5).seatTypeId("t1").build();
+        SeatRequest req = SeatRequest.builder()
+                .id(null)
+                .rowChair("Z")
+                .seatNumber(5)
+                .seatTypeId("t1")
+                .build();
 
         SeatType t1 = SeatType.builder().id("t1").typeName("TYPE1").build();
         Map<String, SeatType> seatTypeMap = Collections.singletonMap("t1", t1);
@@ -289,4 +326,3 @@ class SeatServiceImplTest {
         assertEquals("t1", result.getSeatType().getId());
     }
 }
-

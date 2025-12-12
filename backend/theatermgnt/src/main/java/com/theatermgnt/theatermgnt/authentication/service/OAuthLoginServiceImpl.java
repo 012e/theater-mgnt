@@ -2,10 +2,10 @@ package com.theatermgnt.theatermgnt.authentication.service;
 
 import java.util.UUID;
 
-import com.theatermgnt.theatermgnt.account.service.RegistrationService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.theatermgnt.theatermgnt.account.service.RegistrationService;
 import com.theatermgnt.theatermgnt.authentication.dto.request.ExchangeTokenRequest;
 import com.theatermgnt.theatermgnt.authentication.dto.request.OAuthCustomerCreationRequest;
 import com.theatermgnt.theatermgnt.authentication.dto.response.AuthenticationResponse;

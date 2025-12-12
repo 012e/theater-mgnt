@@ -1,6 +1,5 @@
 package com.theatermgnt.theatermgnt.authentication.controller;
 
-import com.theatermgnt.theatermgnt.authentication.service.AuthenticationService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -8,6 +7,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.theatermgnt.theatermgnt.authentication.dto.request.ForgotPasswordRequest;
 import com.theatermgnt.theatermgnt.authentication.dto.request.ResetPasswordRequest;
+import com.theatermgnt.theatermgnt.authentication.service.AuthenticationService;
 import com.theatermgnt.theatermgnt.common.dto.response.ApiResponse;
 
 import lombok.AccessLevel;

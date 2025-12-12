@@ -1,9 +1,9 @@
 package com.theatermgnt.theatermgnt.authorization.service;
 
+import java.util.List;
+
 import com.theatermgnt.theatermgnt.authorization.dto.request.RoleRequest;
 import com.theatermgnt.theatermgnt.authorization.dto.response.RoleResponse;
-
-import java.util.List;
 
 public interface RoleService {
     RoleResponse create(RoleRequest request);

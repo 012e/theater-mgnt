@@ -1,12 +1,12 @@
 package com.theatermgnt.theatermgnt.authentication.service;
 
+import java.text.ParseException;
+
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jwt.SignedJWT;
 import com.theatermgnt.theatermgnt.authentication.dto.request.*;
 import com.theatermgnt.theatermgnt.authentication.dto.response.AuthenticationResponse;
 import com.theatermgnt.theatermgnt.authentication.dto.response.IntrospectResponse;
-
-import java.text.ParseException;
 
 public interface AuthenticationService {
     IntrospectResponse introspect(IntrospectRequest request) throws ParseException, JOSEException;

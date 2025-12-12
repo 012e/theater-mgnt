@@ -1,10 +1,10 @@
 package com.theatermgnt.theatermgnt.priceConfig.service;
 
+import java.util.List;
+
 import com.theatermgnt.theatermgnt.priceConfig.dto.request.PriceConfigCreationRequest;
 import com.theatermgnt.theatermgnt.priceConfig.dto.request.PriceConfigUpdateRequest;
 import com.theatermgnt.theatermgnt.priceConfig.dto.response.PriceConfigResponse;
-
-import java.util.List;
 
 public interface PriceConfigService {
     PriceConfigResponse createPriceConfig(PriceConfigCreationRequest request);

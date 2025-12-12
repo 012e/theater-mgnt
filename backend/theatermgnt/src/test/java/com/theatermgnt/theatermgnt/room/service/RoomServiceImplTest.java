@@ -1,5 +1,21 @@
 package com.theatermgnt.theatermgnt.room.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import com.theatermgnt.theatermgnt.cinema.entity.Cinema;
 import com.theatermgnt.theatermgnt.cinema.repository.CinemaRepository;
 import com.theatermgnt.theatermgnt.common.exception.AppException;
@@ -12,21 +28,6 @@ import com.theatermgnt.theatermgnt.room.mapper.RoomMapper;
 import com.theatermgnt.theatermgnt.room.repository.RoomRepository;
 import com.theatermgnt.theatermgnt.seat.dto.request.SeatRequest;
 import com.theatermgnt.theatermgnt.seat.service.SeatService;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.List;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class RoomServiceImplTest {
@@ -101,7 +102,12 @@ class RoomServiceImplTest {
         Cinema cinema = Cinema.builder().id("cinema-1").name("C1").build();
         Room room = Room.builder().name("Room A").cinema(cinema).build();
         Room savedRoom = Room.builder().id("r-1").name("Room A").cinema(cinema).build();
-        RoomResponse expectedResponse = RoomResponse.builder().id("r-1").name("Room A").cinemaId("cinema-1").cinemaName("C1").build();
+        RoomResponse expectedResponse = RoomResponse.builder()
+                .id("r-1")
+                .name("Room A")
+                .cinemaId("cinema-1")
+                .cinemaName("C1")
+                .build();
 
         when(cinemasRepository.findById("cinema-1")).thenReturn(Optional.of(cinema));
         when(roomRepository.existsByNameAndCinemaId("Room A", "cinema-1")).thenReturn(false);
@@ -118,7 +124,11 @@ class RoomServiceImplTest {
 
     @Test
     void createRoom_whenSeatsProvided_shouldCallSyncSeats() {
-        SeatRequest seat = SeatRequest.builder().rowChair("A").seatNumber(1).seatTypeId("st-1").build();
+        SeatRequest seat = SeatRequest.builder()
+                .rowChair("A")
+                .seatNumber(1)
+                .seatTypeId("st-1")
+                .build();
         RoomCreationRequest request = RoomCreationRequest.builder()
                 .cinemaId("cinema-1")
                 .name("Room A")
@@ -129,7 +139,8 @@ class RoomServiceImplTest {
         Cinema cinema = Cinema.builder().id("cinema-1").name("C1").build();
         Room room = Room.builder().name("Room A").cinema(cinema).build();
         // simulate repository returns same instance
-        RoomResponse expectedResponse = RoomResponse.builder().id("r-1").name("Room A").build();
+        RoomResponse expectedResponse =
+                RoomResponse.builder().id("r-1").name("Room A").build();
 
         when(cinemasRepository.findById("cinema-1")).thenReturn(Optional.of(cinema));
         when(roomRepository.existsByNameAndCinemaId("Room A", "cinema-1")).thenReturn(false);
@@ -145,7 +156,8 @@ class RoomServiceImplTest {
 
     @Test
     void updateRoom_whenNotFound_shouldThrow() {
-        RoomUpdateRequest request = RoomUpdateRequest.builder().name("New").roomType(null).build();
+        RoomUpdateRequest request =
+                RoomUpdateRequest.builder().name("New").roomType(null).build();
         when(roomRepository.findById("r-1")).thenReturn(Optional.empty());
 
         AppException ex = assertThrows(AppException.class, () -> roomService.updateRoom("r-1", request));
@@ -157,12 +169,14 @@ class RoomServiceImplTest {
     void updateRoom_whenNameConflict_shouldThrow() {
         Cinema cinema = Cinema.builder().id("c-1").name("C").build();
         Room existingRoom = Room.builder().id("r-1").name("Old").cinema(cinema).build();
-        RoomUpdateRequest request = RoomUpdateRequest.builder().name("NewName").roomType(null).build();
+        RoomUpdateRequest request =
+                RoomUpdateRequest.builder().name("NewName").roomType(null).build();
 
         when(roomRepository.findById("r-1")).thenReturn(Optional.of(existingRoom));
         // mapper will be called first but we don't change the cinema
         doNothing().when(roomMapper).updateRoom(eq(existingRoom), eq(request));
-        when(roomRepository.existsByNameAndCinemaIdAndIdNot("NewName", "c-1", "r-1")).thenReturn(true);
+        when(roomRepository.existsByNameAndCinemaIdAndIdNot("NewName", "c-1", "r-1"))
+                .thenReturn(true);
 
         AppException ex = assertThrows(AppException.class, () -> roomService.updateRoom("r-1", request));
         assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.ROOM_EXISTED);
@@ -175,14 +189,23 @@ class RoomServiceImplTest {
     void updateRoom_whenSeatsProvided_shouldSyncAndReturn() {
         Cinema cinema = Cinema.builder().id("c-1").name("C").build();
         Room existingRoom = Room.builder().id("r-1").name("Old").cinema(cinema).build();
-        RoomUpdateRequest request = RoomUpdateRequest.builder().name("NewName").roomType(null).seats(List.of(SeatRequest.builder().rowChair("A").seatNumber(1).seatTypeId("st-1").build())).build();
+        RoomUpdateRequest request = RoomUpdateRequest.builder()
+                .name("NewName")
+                .roomType(null)
+                .seats(List.of(SeatRequest.builder()
+                        .rowChair("A")
+                        .seatNumber(1)
+                        .seatTypeId("st-1")
+                        .build()))
+                .build();
 
         Room savedRoom = Room.builder().id("r-1").name("NewName").cinema(cinema).build();
         RoomResponse expected = RoomResponse.builder().id("r-1").name("NewName").build();
 
         when(roomRepository.findById("r-1")).thenReturn(Optional.of(existingRoom));
         doNothing().when(roomMapper).updateRoom(existingRoom, request);
-        when(roomRepository.existsByNameAndCinemaIdAndIdNot("NewName", "c-1", "r-1")).thenReturn(false);
+        when(roomRepository.existsByNameAndCinemaIdAndIdNot("NewName", "c-1", "r-1"))
+                .thenReturn(false);
         when(roomRepository.save(existingRoom)).thenReturn(savedRoom);
         when(roomMapper.toRoomResponseWithSeats(savedRoom)).thenReturn(expected);
 
@@ -260,4 +283,3 @@ class RoomServiceImplTest {
         verify(roomRepository).deleteById("r-1");
     }
 }
-

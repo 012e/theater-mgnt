@@ -1,6 +1,11 @@
 package com.theatermgnt.theatermgnt.seat.service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -19,12 +24,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -34,11 +33,10 @@ public class SeatServiceImpl implements SeatService {
     SeatTypeRepository seatTypeRepository;
     SeatMapper seatMapper;
 
-
     @Override
     public void syncSeats(Room room, List<SeatRequest> seatRequests) {
-        if(seatRequests == null || seatRequests.isEmpty()) {
-            seatRequests = new  ArrayList<>();
+        if (seatRequests == null || seatRequests.isEmpty()) {
+            seatRequests = new ArrayList<>();
         }
 
         // Get all seats existing in the room
@@ -54,23 +52,22 @@ public class SeatServiceImpl implements SeatService {
         List<Seat> seatsToDelete = currentSeats.stream()
                 .filter(seat -> !keepSeatIds.contains(seat.getId()))
                 .collect(Collectors.toList());
-        if(!seatsToDelete.isEmpty()) {
+        if (!seatsToDelete.isEmpty()) {
             seatRepository.deleteAll(seatsToDelete);
         }
 
-        Map<String, Seat> currentSeatMap = currentSeats.stream()
-                .collect(Collectors.toMap(Seat::getId, Function.identity()));
+        Map<String, Seat> currentSeatMap =
+                currentSeats.stream().collect(Collectors.toMap(Seat::getId, Function.identity()));
 
-        Set<String> seatTypeIds = seatRequests.stream()
-                .map(SeatRequest::getSeatTypeId)
-                .collect(Collectors.toSet());
+        Set<String> seatTypeIds =
+                seatRequests.stream().map(SeatRequest::getSeatTypeId).collect(Collectors.toSet());
 
         Map<String, SeatType> seatTypeMap = seatTypeRepository.findAllById(seatTypeIds).stream()
                 .collect(Collectors.toMap(SeatType::getId, Function.identity()));
 
         // Update existing seats and create new seats
         List<Seat> seatsToSave = seatRequests.stream()
-                .map(req -> mapRequestToSeat(req, room, seatTypeMap,currentSeatMap))
+                .map(req -> mapRequestToSeat(req, room, seatTypeMap, currentSeatMap))
                 .collect(Collectors.toList());
 
         List<Seat> savedSeats = seatRepository.saveAll(seatsToSave);
@@ -79,9 +76,8 @@ public class SeatServiceImpl implements SeatService {
     }
 
     @Override
-    public Seat mapRequestToSeat(SeatRequest seatRequest, Room room,
-                                  Map<String, SeatType> seatTypeMap,
-                                  Map<String, Seat> currentSeatMap) {
+    public Seat mapRequestToSeat(
+            SeatRequest seatRequest, Room room, Map<String, SeatType> seatTypeMap, Map<String, Seat> currentSeatMap) {
 
         SeatType seatType = seatTypeMap.get(seatRequest.getSeatTypeId());
         if (seatType == null) {
@@ -100,5 +96,4 @@ public class SeatServiceImpl implements SeatService {
         seat.setSeatType(seatType);
         return seat;
     }
-
 }

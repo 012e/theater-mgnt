@@ -1,10 +1,10 @@
 package com.theatermgnt.theatermgnt.combo.service;
 
+import java.util.List;
+
 import com.theatermgnt.theatermgnt.combo.dto.request.ComboCreationRequest;
 import com.theatermgnt.theatermgnt.combo.dto.request.ComboUpdateRequest;
 import com.theatermgnt.theatermgnt.combo.dto.response.ComboResponse;
-
-import java.util.List;
 
 public interface ComboService {
     ComboResponse createCombo(ComboCreationRequest request);

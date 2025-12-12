@@ -52,11 +52,7 @@ class ComboItemServiceImplTest {
     }
 
     private ComboItem sampleComboItem(String name) {
-        return ComboItem.builder()
-                .name(name)
-                .quantity(2)
-                .combo(sampleCombo())
-                .build();
+        return ComboItem.builder().name(name).quantity(2).combo(sampleCombo()).build();
     }
 
     private ComboItemCreationRequest sampleCreationRequest() {
@@ -90,7 +86,8 @@ class ComboItemServiceImplTest {
     void createComboItem_whenNameExists_thenThrow() {
         ComboItemCreationRequest req = sampleCreationRequest();
         when(comboRepository.findById(req.getComboId())).thenReturn(Optional.of(sampleCombo()));
-        when(comboItemRepository.existsByNameAndComboId(req.getName(), req.getComboId())).thenReturn(true);
+        when(comboItemRepository.existsByNameAndComboId(req.getName(), req.getComboId()))
+                .thenReturn(true);
 
         AppException ex = assertThrows(AppException.class, () -> comboItemService.createComboItem(req));
         assertEquals(ErrorCode.COMBO_ITEM_EXISTED, ex.getErrorCode());
@@ -105,7 +102,8 @@ class ComboItemServiceImplTest {
         ComboItemCreationRequest req = sampleCreationRequest();
         Combo combo = sampleCombo();
         when(comboRepository.findById(req.getComboId())).thenReturn(Optional.of(combo));
-        when(comboItemRepository.existsByNameAndComboId(req.getName(), req.getComboId())).thenReturn(false);
+        when(comboItemRepository.existsByNameAndComboId(req.getName(), req.getComboId()))
+                .thenReturn(false);
 
         ComboItem mapped = ComboItem.builder()
                 .name(req.getName())
@@ -122,14 +120,13 @@ class ComboItemServiceImplTest {
         // capture saved argument to assert combo was set
         ArgumentCaptor<ComboItem> captor = ArgumentCaptor.forClass(ComboItem.class);
         when(comboItemRepository.save(captor.capture())).thenReturn(saved);
-        when(comboItemMapper.toComboItemResponse(saved)).thenReturn(
-                ComboItemResponse.builder()
+        when(comboItemMapper.toComboItemResponse(saved))
+                .thenReturn(ComboItemResponse.builder()
                         .id(saved.getId())
                         .comboName(combo.getName())
                         .name(saved.getName())
                         .quantity(saved.getQuantity())
-                        .build()
-        );
+                        .build());
 
         ComboItemResponse resp = comboItemService.createComboItem(req);
 
@@ -155,10 +152,20 @@ class ComboItemServiceImplTest {
         ComboItem it2 = sampleComboItem("B");
         when(comboItemRepository.findByComboId("combo-1")).thenReturn(List.of(it1, it2));
 
-        when(comboItemMapper.toComboItemResponse(it1)).thenReturn(
-                ComboItemResponse.builder().id(it1.getId()).comboName(it1.getCombo().getName()).name(it1.getName()).quantity(it1.getQuantity()).build());
-        when(comboItemMapper.toComboItemResponse(it2)).thenReturn(
-                ComboItemResponse.builder().id(it2.getId()).comboName(it2.getCombo().getName()).name(it2.getName()).quantity(it2.getQuantity()).build());
+        when(comboItemMapper.toComboItemResponse(it1))
+                .thenReturn(ComboItemResponse.builder()
+                        .id(it1.getId())
+                        .comboName(it1.getCombo().getName())
+                        .name(it1.getName())
+                        .quantity(it1.getQuantity())
+                        .build());
+        when(comboItemMapper.toComboItemResponse(it2))
+                .thenReturn(ComboItemResponse.builder()
+                        .id(it2.getId())
+                        .comboName(it2.getCombo().getName())
+                        .name(it2.getName())
+                        .quantity(it2.getQuantity())
+                        .build());
 
         List<ComboItemResponse> responses = comboItemService.getComboItemsByCombo("combo-1");
         assertEquals(2, responses.size());
@@ -181,8 +188,13 @@ class ComboItemServiceImplTest {
     void getComboItems_returnsAllMapped() {
         ComboItem it1 = sampleComboItem("A");
         when(comboItemRepository.findAll()).thenReturn(List.of(it1));
-        when(comboItemMapper.toComboItemResponse(it1)).thenReturn(
-                ComboItemResponse.builder().id(it1.getId()).comboName(it1.getCombo().getName()).name(it1.getName()).quantity(it1.getQuantity()).build());
+        when(comboItemMapper.toComboItemResponse(it1))
+                .thenReturn(ComboItemResponse.builder()
+                        .id(it1.getId())
+                        .comboName(it1.getCombo().getName())
+                        .name(it1.getName())
+                        .quantity(it1.getQuantity())
+                        .build());
 
         List<ComboItemResponse> responses = comboItemService.getComboItems();
         assertEquals(1, responses.size());
@@ -203,8 +215,13 @@ class ComboItemServiceImplTest {
     void getComboItem_success() {
         ComboItem it = sampleComboItem("A");
         when(comboItemRepository.findById("i1")).thenReturn(Optional.of(it));
-        when(comboItemMapper.toComboItemResponse(it)).thenReturn(
-                ComboItemResponse.builder().id(it.getId()).comboName(it.getCombo().getName()).name(it.getName()).quantity(it.getQuantity()).build());
+        when(comboItemMapper.toComboItemResponse(it))
+                .thenReturn(ComboItemResponse.builder()
+                        .id(it.getId())
+                        .comboName(it.getCombo().getName())
+                        .name(it.getName())
+                        .quantity(it.getQuantity())
+                        .build());
 
         ComboItemResponse resp = comboItemService.getComboItem("i1");
         assertNotNull(resp);
@@ -216,7 +233,8 @@ class ComboItemServiceImplTest {
     @Test
     void updateComboItem_notFound_thenThrow() {
         when(comboItemRepository.findById("i-missing")).thenReturn(Optional.empty());
-        AppException ex = assertThrows(AppException.class, () -> comboItemService.updateComboItem("i-missing", sampleUpdateRequest()));
+        AppException ex = assertThrows(
+                AppException.class, () -> comboItemService.updateComboItem("i-missing", sampleUpdateRequest()));
         assertEquals(ErrorCode.COMBO_ITEM_NOT_EXISTED, ex.getErrorCode());
         verify(comboItemRepository).findById("i-missing");
     }
@@ -228,16 +246,23 @@ class ComboItemServiceImplTest {
 
         // mapper.updateComboItem should be invoked; we simulate it by letting it set fields via doAnswer
         doAnswer(invocation -> {
-            ComboItem target = invocation.getArgument(0);
-            ComboItemUpdateRequest req = invocation.getArgument(1);
-            target.setName(req.getName());
-            target.setQuantity(req.getQuantity());
-            return null;
-        }).when(comboItemMapper).updateComboItem(any(ComboItem.class), any(ComboItemUpdateRequest.class));
+                    ComboItem target = invocation.getArgument(0);
+                    ComboItemUpdateRequest req = invocation.getArgument(1);
+                    target.setName(req.getName());
+                    target.setQuantity(req.getQuantity());
+                    return null;
+                })
+                .when(comboItemMapper)
+                .updateComboItem(any(ComboItem.class), any(ComboItemUpdateRequest.class));
 
         when(comboItemRepository.save(existing)).thenReturn(existing);
-        when(comboItemMapper.toComboItemResponse(existing)).thenReturn(
-                ComboItemResponse.builder().id(existing.getId()).comboName(existing.getCombo().getName()).name("Large Popcorn").quantity(3).build());
+        when(comboItemMapper.toComboItemResponse(existing))
+                .thenReturn(ComboItemResponse.builder()
+                        .id(existing.getId())
+                        .comboName(existing.getCombo().getName())
+                        .name("Large Popcorn")
+                        .quantity(3)
+                        .build());
 
         ComboItemResponse resp = comboItemService.updateComboItem("i1", sampleUpdateRequest());
         assertNotNull(resp);
@@ -269,4 +294,3 @@ class ComboItemServiceImplTest {
         verify(comboItemRepository).deleteById("i1");
     }
 }
-

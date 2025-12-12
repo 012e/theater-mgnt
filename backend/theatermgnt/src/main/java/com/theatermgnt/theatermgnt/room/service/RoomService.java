@@ -1,11 +1,12 @@
 package com.theatermgnt.theatermgnt.room.service;
 
+import java.util.List;
+
+import org.springframework.transaction.annotation.Transactional;
+
 import com.theatermgnt.theatermgnt.room.dto.request.RoomCreationRequest;
 import com.theatermgnt.theatermgnt.room.dto.request.RoomUpdateRequest;
 import com.theatermgnt.theatermgnt.room.dto.response.RoomResponse;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 public interface RoomService {
     @Transactional

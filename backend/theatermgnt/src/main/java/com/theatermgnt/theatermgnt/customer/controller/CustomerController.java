@@ -2,12 +2,12 @@ package com.theatermgnt.theatermgnt.customer.controller;
 
 import java.util.List;
 
-import com.theatermgnt.theatermgnt.customer.service.CustomerService;
 import org.springframework.web.bind.annotation.*;
 
 import com.theatermgnt.theatermgnt.common.dto.response.ApiResponse;
 import com.theatermgnt.theatermgnt.customer.dto.request.CustomerProfileUpdateRequest;
 import com.theatermgnt.theatermgnt.customer.dto.response.CustomerResponse;
+import com.theatermgnt.theatermgnt.customer.service.CustomerService;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;

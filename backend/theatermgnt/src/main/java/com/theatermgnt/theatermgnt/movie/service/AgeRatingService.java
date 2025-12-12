@@ -1,9 +1,9 @@
 package com.theatermgnt.theatermgnt.movie.service;
 
+import java.util.List;
+
 import com.theatermgnt.theatermgnt.movie.dto.request.CreateAgeRatingRequest;
 import com.theatermgnt.theatermgnt.movie.dto.response.AgeRatingResponse;
-
-import java.util.List;
 
 public interface AgeRatingService {
     // CREATE

@@ -1,9 +1,9 @@
 package com.theatermgnt.theatermgnt.movie.service;
 
+import java.util.List;
+
 import com.theatermgnt.theatermgnt.movie.dto.request.CreateGenreRequest;
 import com.theatermgnt.theatermgnt.movie.dto.response.GenreResponse;
-
-import java.util.List;
 
 public interface GenreService {
     // CREATE

@@ -1,12 +1,12 @@
 package com.theatermgnt.theatermgnt.movie.service;
 
+import java.util.List;
+
 import com.theatermgnt.theatermgnt.common.enums.MovieStatus;
 import com.theatermgnt.theatermgnt.movie.dto.request.CreateMovieRequest;
 import com.theatermgnt.theatermgnt.movie.dto.request.UpdateMovieRequest;
 import com.theatermgnt.theatermgnt.movie.dto.response.MovieResponse;
 import com.theatermgnt.theatermgnt.movie.dto.response.MovieSimpleResponse;
-
-import java.util.List;
 
 public interface MovieService {
     // ========== CREATE ==========

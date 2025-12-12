@@ -1,10 +1,10 @@
 package com.theatermgnt.theatermgnt.seatType.service;
 
+import java.util.List;
+
 import com.theatermgnt.theatermgnt.seatType.dto.request.SeatTypeCreationRequest;
 import com.theatermgnt.theatermgnt.seatType.dto.request.SeatTypeUpdateRequest;
 import com.theatermgnt.theatermgnt.seatType.dto.response.SeatTypeResponse;
-
-import java.util.List;
 
 public interface SeatTypeService {
     SeatTypeResponse createSeatType(SeatTypeCreationRequest request);

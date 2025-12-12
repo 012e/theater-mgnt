@@ -5,7 +5,6 @@ import java.time.LocalDateTime;
 
 import jakarta.persistence.*;
 
-import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -14,6 +13,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.SuperBuilder;
 
 @Setter
 @Getter
@@ -34,7 +34,7 @@ public abstract class BaseEntity implements Serializable {
     LocalDateTime createdAt;
 
     @UpdateTimestamp
-    @Column(name = "updated_at" , nullable = true)
+    @Column(name = "updated_at", nullable = true)
     LocalDateTime updatedAt;
 
     @Column(name = "deleted", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")

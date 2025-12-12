@@ -2,7 +2,6 @@ package com.theatermgnt.theatermgnt.cinema.entity;
 
 import jakarta.persistence.*;
 
-import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 
@@ -10,6 +9,7 @@ import com.theatermgnt.theatermgnt.common.entity.BaseEntity;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.SuperBuilder;
 
 @Setter
 @Getter

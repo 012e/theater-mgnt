@@ -36,10 +36,7 @@ class GenreServiceImplTest {
 
     // Helper factories
     private CreateGenreRequest sampleRequest() {
-        return CreateGenreRequest.builder()
-                .id("g1")
-                .name("Action")
-                .build();
+        return CreateGenreRequest.builder().id("g1").name("Action").build();
     }
 
     private Genre sampleGenre(String id, String name) {
@@ -50,11 +47,7 @@ class GenreServiceImplTest {
     }
 
     private GenreResponse sampleResponse(String id, String name) {
-        return GenreResponse.builder()
-                .id(id)
-                .name(name)
-                .movieCount(0)
-                .build();
+        return GenreResponse.builder().id(id).name(name).movieCount(0).build();
     }
 
     @Test
@@ -267,4 +260,3 @@ class GenreServiceImplTest {
         verifyNoMoreInteractions(genreRepository, genreMapper);
     }
 }
-

@@ -2,7 +2,6 @@ package com.theatermgnt.theatermgnt.priceConfig.controller;
 
 import java.util.List;
 
-import com.theatermgnt.theatermgnt.priceConfig.service.PriceConfigService;
 import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.*;
@@ -11,6 +10,7 @@ import com.theatermgnt.theatermgnt.common.dto.response.ApiResponse;
 import com.theatermgnt.theatermgnt.priceConfig.dto.request.PriceConfigCreationRequest;
 import com.theatermgnt.theatermgnt.priceConfig.dto.request.PriceConfigUpdateRequest;
 import com.theatermgnt.theatermgnt.priceConfig.dto.response.PriceConfigResponse;
+import com.theatermgnt.theatermgnt.priceConfig.service.PriceConfigService;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;

@@ -1,8 +1,9 @@
 package com.theatermgnt.theatermgnt.room.entity;
 
+import java.util.List;
+
 import jakarta.persistence.*;
 
-import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 
@@ -14,8 +15,7 @@ import com.theatermgnt.theatermgnt.seat.entity.Seat;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
-import java.util.List;
+import lombok.experimental.SuperBuilder;
 
 @Setter
 @Getter
@@ -34,7 +34,7 @@ public class Room extends BaseEntity {
 
     String name;
 
-    @OneToMany(fetch =  FetchType.LAZY, mappedBy = "room", cascade = CascadeType.ALL)
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "room", cascade = CascadeType.ALL)
     List<Seat> seats;
 
     @Enumerated(EnumType.STRING)
@@ -42,7 +42,6 @@ public class Room extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     RoomStatus status;
-
 
     Integer totalSeats;
 }

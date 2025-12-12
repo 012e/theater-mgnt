@@ -1,13 +1,14 @@
 package com.theatermgnt.theatermgnt.customer.service;
 
+import java.util.List;
+
+import org.springframework.transaction.annotation.Transactional;
+
 import com.theatermgnt.theatermgnt.account.entity.Account;
 import com.theatermgnt.theatermgnt.customer.dto.request.CustomerAccountCreationRequest;
 import com.theatermgnt.theatermgnt.customer.dto.request.CustomerProfileUpdateRequest;
 import com.theatermgnt.theatermgnt.customer.dto.response.CustomerResponse;
 import com.theatermgnt.theatermgnt.customer.entity.Customer;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 public interface CustomerService {
     @Transactional
