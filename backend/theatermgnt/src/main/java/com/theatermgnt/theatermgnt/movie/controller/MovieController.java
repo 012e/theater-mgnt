@@ -3,6 +3,7 @@ package com.theatermgnt.theatermgnt.movie.controller;
 import java.util.List;
 
 import com.theatermgnt.theatermgnt.common.enums.MovieStatus;
+import com.theatermgnt.theatermgnt.movie.service.MovieService;
 import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.*;
@@ -12,8 +13,6 @@ import com.theatermgnt.theatermgnt.movie.dto.request.CreateMovieRequest;
 import com.theatermgnt.theatermgnt.movie.dto.request.UpdateMovieRequest;
 import com.theatermgnt.theatermgnt.movie.dto.response.MovieResponse;
 import com.theatermgnt.theatermgnt.movie.dto.response.MovieSimpleResponse;
-import com.theatermgnt.theatermgnt.movie.entity.Movie;
-import com.theatermgnt.theatermgnt.movie.service.MovieService;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;

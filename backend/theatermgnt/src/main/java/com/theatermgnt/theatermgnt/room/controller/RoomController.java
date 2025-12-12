@@ -2,6 +2,7 @@ package com.theatermgnt.theatermgnt.room.controller;
 
 import java.util.List;
 
+import com.theatermgnt.theatermgnt.room.service.RoomService;
 import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.*;
@@ -10,7 +11,6 @@ import com.theatermgnt.theatermgnt.common.dto.response.ApiResponse;
 import com.theatermgnt.theatermgnt.room.dto.request.RoomCreationRequest;
 import com.theatermgnt.theatermgnt.room.dto.request.RoomUpdateRequest;
 import com.theatermgnt.theatermgnt.room.dto.response.RoomResponse;
-import com.theatermgnt.theatermgnt.room.service.RoomService;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;

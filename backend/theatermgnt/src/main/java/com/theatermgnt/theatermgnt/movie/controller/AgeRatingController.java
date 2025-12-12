@@ -2,6 +2,7 @@ package com.theatermgnt.theatermgnt.movie.controller;
 
 import java.util.List;
 
+import com.theatermgnt.theatermgnt.movie.service.AgeRatingService;
 import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.*;
@@ -9,7 +10,6 @@ import org.springframework.web.bind.annotation.*;
 import com.theatermgnt.theatermgnt.common.dto.response.ApiResponse;
 import com.theatermgnt.theatermgnt.movie.dto.request.CreateAgeRatingRequest;
 import com.theatermgnt.theatermgnt.movie.dto.response.AgeRatingResponse;
-import com.theatermgnt.theatermgnt.movie.service.AgeRatingService;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
