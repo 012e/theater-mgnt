@@ -1,8 +1,12 @@
 package com.theatermgnt.theatermgnt.authentication.service;
 
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.SignedJWT;
 import com.theatermgnt.theatermgnt.account.entity.Account;
 import com.theatermgnt.theatermgnt.account.repository.AccountRepository;
 import com.theatermgnt.theatermgnt.authentication.dto.request.AuthenticationRequest;
+import com.theatermgnt.theatermgnt.authentication.dto.request.LogoutRequest;
 import com.theatermgnt.theatermgnt.authentication.dto.response.AuthenticationResponse;
 import com.theatermgnt.theatermgnt.authentication.entity.InvalidatedToken;
 import com.theatermgnt.theatermgnt.authentication.repository.InvalidatedTokenRepository;
@@ -12,22 +16,27 @@ import com.theatermgnt.theatermgnt.common.exception.AppException;
 import com.theatermgnt.theatermgnt.common.exception.ErrorCode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+import java.text.ParseException;
+import java.util.Date;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class AuthenticationServiceImplTest {
+    @Spy
     @InjectMocks
     AuthenticationServiceImpl authenticationService;
 
@@ -103,5 +112,39 @@ public class AuthenticationServiceImplTest {
         AppException ex = assertThrows(AppException.class, () -> authenticationService.authenticate(request));
 
         assertEquals(ErrorCode.USER_NOT_EXISTED, ex.getErrorCode());
+    }
+
+    @Test
+    void logout_success() throws ParseException, JOSEException {
+        //given
+        LogoutRequest request = new LogoutRequest();
+        request.setToken("valid-token");
+
+        Date expiryTime = new Date(System.currentTimeMillis() + 60_000);
+
+        JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
+                .jwtID("jti-123")
+                .expirationTime(expiryTime)
+                .build();
+
+        SignedJWT signedJWT = mock(SignedJWT.class);
+
+        when(signedJWT.getJWTClaimsSet()).thenReturn(claimsSet);
+
+        //mock verifyToken
+        doReturn(signedJWT)
+                .when(authenticationService)
+                .verifyToken("valid-token", true);
+
+        //when
+        authenticationService.logout(request);
+
+        //then
+        ArgumentCaptor<InvalidatedToken> captor = ArgumentCaptor.forClass(InvalidatedToken.class);
+        verify(invalidatedTokenRepository).save(captor.capture());
+
+        InvalidatedToken saved = captor.getValue();
+        assertEquals("jti-123", saved.getId());
+        assertEquals(expiryTime, saved.getExpiryTime());
     }
 }
