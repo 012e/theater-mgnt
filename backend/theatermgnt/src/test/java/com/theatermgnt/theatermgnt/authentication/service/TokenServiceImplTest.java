@@ -4,6 +4,8 @@ import com.theatermgnt.theatermgnt.account.entity.Account;
 import com.theatermgnt.theatermgnt.authentication.enums.AccountType;
 import com.theatermgnt.theatermgnt.authorization.entity.Permission;
 import com.theatermgnt.theatermgnt.authorization.entity.Role;
+import com.theatermgnt.theatermgnt.common.exception.AppException;
+import com.theatermgnt.theatermgnt.common.exception.ErrorCode;
 import com.theatermgnt.theatermgnt.staff.entity.Staff;
 import com.theatermgnt.theatermgnt.staff.repository.StaffRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -104,4 +106,22 @@ public class TokenServiceImplTest {
         assertNotNull(token);
     }
 
+    @Test
+    void generateToken_internalAccount_staffNotFound_throwException() {
+        // given
+        Account account = new Account();
+        account.setId("acc-404");
+        account.setAccountType(AccountType.INTERNAL);
+
+        when(staffRepository.findByAccountId("acc-404"))
+                .thenReturn(Optional.empty());
+
+        // when + then
+        AppException exception = assertThrows(
+                AppException.class,
+                () -> tokenService.generateToken(account)
+        );
+
+        assertEquals(ErrorCode.USER_NOT_EXISTED, exception.getErrorCode());
+    }
 }
