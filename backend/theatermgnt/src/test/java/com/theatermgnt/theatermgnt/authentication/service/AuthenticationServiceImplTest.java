@@ -8,6 +8,8 @@ import com.theatermgnt.theatermgnt.authentication.entity.InvalidatedToken;
 import com.theatermgnt.theatermgnt.authentication.repository.InvalidatedTokenRepository;
 import com.theatermgnt.theatermgnt.authentication.repository.OtpTokenRepository;
 
+import com.theatermgnt.theatermgnt.common.exception.AppException;
+import com.theatermgnt.theatermgnt.common.exception.ErrorCode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -72,5 +74,21 @@ public class AuthenticationServiceImplTest {
         //then
         assertTrue(response.isAuthenticated());
         assertEquals("mock-token", response.getToken());
+    }
+
+    @Test
+    void authenticate_wrongPassword_throwException() {
+        AuthenticationRequest request = new AuthenticationRequest();
+        request.setLoginIdentifier("user1");
+        request.setPassword("wrong-password");
+
+        Account account = new Account();
+        account.setPassword(new BCryptPasswordEncoder().encode("correct-password"));
+
+        when(accountRepository.findByUsernameOrEmailOrPhoneNumber(any(), any(), any())).thenReturn(Optional.of(account));
+
+        AppException ex = assertThrows(AppException.class, () -> authenticationService.authenticate(request));
+
+        assertEquals(ErrorCode.UNAUTHENTICATED, ex.getErrorCode());
     }
 }
