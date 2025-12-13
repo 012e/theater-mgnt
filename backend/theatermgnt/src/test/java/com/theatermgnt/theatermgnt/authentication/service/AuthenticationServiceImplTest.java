@@ -371,4 +371,35 @@ public class AuthenticationServiceImplTest {
         );
     }
 
+    @Test
+    void refreshToken_userNotExist_throwException() throws Exception {
+        // GIVEN
+        RefreshTokenRequest request = new RefreshTokenRequest();
+        request.setToken("old-token");
+
+        SignedJWT signedJWT = mock(SignedJWT.class);
+
+        JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
+                .jwtID("jti-123")
+                .subject("unknown-user")
+                .expirationTime(new Date())
+                .build();
+
+        when(signedJWT.getJWTClaimsSet()).thenReturn(claimsSet);
+
+        doReturn(signedJWT)
+                .when(authenticationService)
+                .verifyToken("old-token", true);
+
+        when(accountRepository.findByUsername("unknown-user"))
+                .thenReturn(Optional.empty());
+
+        // WHEN + THEN
+        AppException exception = assertThrows(
+                AppException.class,
+                () -> authenticationService.refreshToken(request)
+        );
+
+        assertEquals(ErrorCode.USER_NOT_EXISTED, exception.getErrorCode());
+    }
 }
