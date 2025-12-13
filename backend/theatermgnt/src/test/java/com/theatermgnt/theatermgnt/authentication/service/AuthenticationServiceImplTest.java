@@ -222,6 +222,28 @@ public class AuthenticationServiceImplTest {
     }
 
     @Test
+    void resetPassword_noOtp_shouldThrowUnauthenticated() {
+        // given
+        ResetPasswordRequest request = new ResetPasswordRequest();
+        request.setLoginIdentifier("user1");
+
+        Account account = new Account();
+
+        when(accountRepository.findByUsernameOrEmailOrPhoneNumber(
+                any(), any(), any()))
+                .thenReturn(Optional.of(account));
+
+        when(otpTokenRepository.findByAccount(account))
+                .thenReturn(Optional.empty());
+
+        // when & then
+        AppException ex = assertThrows(AppException.class,
+                () -> authenticationService.resetPassword(request));
+
+        assertEquals(ErrorCode.UNAUTHENTICATED, ex.getErrorCode());
+    }
+
+    @Test
     void resetPassword_otpExpired() {
         ResetPasswordRequest request = new ResetPasswordRequest();
         request.setLoginIdentifier("user1");
