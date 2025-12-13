@@ -1,5 +1,18 @@
 package com.theatermgnt.theatermgnt.authentication.service;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+import java.util.Optional;
+import java.util.Set;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import com.theatermgnt.theatermgnt.account.entity.Account;
 import com.theatermgnt.theatermgnt.authentication.enums.AccountType;
 import com.theatermgnt.theatermgnt.authorization.entity.Permission;
@@ -8,21 +21,6 @@ import com.theatermgnt.theatermgnt.common.exception.AppException;
 import com.theatermgnt.theatermgnt.common.exception.ErrorCode;
 import com.theatermgnt.theatermgnt.staff.entity.Staff;
 import com.theatermgnt.theatermgnt.staff.repository.StaffRepository;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class TokenServiceImplTest {
@@ -60,7 +58,7 @@ public class TokenServiceImplTest {
         Staff staff = new Staff();
         staff.setRoles(Set.of());
 
-        String scope =  tokenService.buildScope(staff);
+        String scope = tokenService.buildScope(staff);
         assertEquals("", scope);
     }
 
@@ -81,8 +79,7 @@ public class TokenServiceImplTest {
         Staff staff = new Staff();
         staff.setRoles(Set.of(role));
 
-        when(staffRepository.findByAccountId("acc-1"))
-                .thenReturn(Optional.of(staff));
+        when(staffRepository.findByAccountId("acc-1")).thenReturn(Optional.of(staff));
 
         // when
         String token = tokenService.generateToken(account);
@@ -113,14 +110,10 @@ public class TokenServiceImplTest {
         account.setId("acc-404");
         account.setAccountType(AccountType.INTERNAL);
 
-        when(staffRepository.findByAccountId("acc-404"))
-                .thenReturn(Optional.empty());
+        when(staffRepository.findByAccountId("acc-404")).thenReturn(Optional.empty());
 
         // when + then
-        AppException exception = assertThrows(
-                AppException.class,
-                () -> tokenService.generateToken(account)
-        );
+        AppException exception = assertThrows(AppException.class, () -> tokenService.generateToken(account));
 
         assertEquals(ErrorCode.USER_NOT_EXISTED, exception.getErrorCode());
     }
