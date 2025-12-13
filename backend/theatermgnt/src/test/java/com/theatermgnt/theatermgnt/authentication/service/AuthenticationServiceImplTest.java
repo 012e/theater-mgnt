@@ -147,4 +147,21 @@ public class AuthenticationServiceImplTest {
         assertEquals("jti-123", saved.getId());
         assertEquals(expiryTime, saved.getExpiryTime());
     }
+
+    @Test
+    void logout_tokenExpired_shouldNotSaveToken() throws ParseException, JOSEException {
+        //given
+        LogoutRequest request = new LogoutRequest();
+        request.setToken("expired-token");
+
+        doThrow(new AppException(ErrorCode.UNAUTHENTICATED))
+                .when(authenticationService)
+                .verifyToken("expired-token", true);
+
+        //when
+        authenticationService.logout(request);
+
+        //then
+        verify(invalidatedTokenRepository, never()).save(any());
+    }
 }
