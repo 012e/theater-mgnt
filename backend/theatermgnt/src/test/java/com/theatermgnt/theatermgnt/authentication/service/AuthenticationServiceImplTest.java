@@ -210,13 +210,11 @@ public class AuthenticationServiceImplTest {
         ResetPasswordRequest request = new ResetPasswordRequest();
         request.setLoginIdentifier("not-exist");
 
-        when(accountRepository.findByUsernameOrEmailOrPhoneNumber(
-                any(), any(), any()))
+        when(accountRepository.findByUsernameOrEmailOrPhoneNumber(any(), any(), any()))
                 .thenReturn(Optional.empty());
 
         // when & then
-        AppException ex = assertThrows(AppException.class,
-                () -> authenticationService.resetPassword(request));
+        AppException ex = assertThrows(AppException.class, () -> authenticationService.resetPassword(request));
 
         assertEquals(ErrorCode.USER_NOT_EXISTED, ex.getErrorCode());
     }
@@ -229,16 +227,13 @@ public class AuthenticationServiceImplTest {
 
         Account account = new Account();
 
-        when(accountRepository.findByUsernameOrEmailOrPhoneNumber(
-                any(), any(), any()))
+        when(accountRepository.findByUsernameOrEmailOrPhoneNumber(any(), any(), any()))
                 .thenReturn(Optional.of(account));
 
-        when(otpTokenRepository.findByAccount(account))
-                .thenReturn(Optional.empty());
+        when(otpTokenRepository.findByAccount(account)).thenReturn(Optional.empty());
 
         // when & then
-        AppException ex = assertThrows(AppException.class,
-                () -> authenticationService.resetPassword(request));
+        AppException ex = assertThrows(AppException.class, () -> authenticationService.resetPassword(request));
 
         assertEquals(ErrorCode.UNAUTHENTICATED, ex.getErrorCode());
     }
@@ -280,20 +275,45 @@ public class AuthenticationServiceImplTest {
         otp.setCode("123456");
         otp.setExpiryTime(Instant.now().plusSeconds(300));
 
-        when(accountRepository.findByUsernameOrEmailOrPhoneNumber(
-                any(), any(), any()))
+        when(accountRepository.findByUsernameOrEmailOrPhoneNumber(any(), any(), any()))
                 .thenReturn(Optional.of(account));
 
-        when(otpTokenRepository.findByAccount(account))
-                .thenReturn(Optional.of(otp));
+        when(otpTokenRepository.findByAccount(account)).thenReturn(Optional.of(otp));
 
         // when & then
-        AppException ex = assertThrows(AppException.class,
-                () -> authenticationService.resetPassword(request));
+        AppException ex = assertThrows(AppException.class, () -> authenticationService.resetPassword(request));
 
         assertEquals(ErrorCode.INVALID_OTP, ex.getErrorCode());
         verify(otpTokenRepository, never()).delete(any());
         verify(accountRepository, never()).save(any());
+    }
+
+    @Test
+    void resetPassword_success() {
+        // given
+        ResetPasswordRequest request = new ResetPasswordRequest();
+        request.setLoginIdentifier("user1");
+        request.setOtpCode("123456");
+        request.setNewPassword("new-password");
+
+        Account account = new Account();
+
+        OtpToken otp = new OtpToken();
+        otp.setCode("123456");
+        otp.setExpiryTime(Instant.now().plusSeconds(300));
+
+        when(accountRepository.findByUsernameOrEmailOrPhoneNumber(any(), any(), any()))
+                .thenReturn(Optional.of(account));
+
+        when(otpTokenRepository.findByAccount(account)).thenReturn(Optional.of(otp));
+
+        // when
+        authenticationService.resetPassword(request);
+
+        // then
+        verify(accountRepository).save(account);
+        verify(otpTokenRepository).delete(otp);
+        assertNotNull(account.getPassword());
     }
 
     @Test
