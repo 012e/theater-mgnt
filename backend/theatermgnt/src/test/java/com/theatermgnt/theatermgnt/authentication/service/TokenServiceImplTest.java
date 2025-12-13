@@ -89,4 +89,19 @@ public class TokenServiceImplTest {
         assertNotNull(token);
         assertFalse(token.isBlank());
     }
+
+    @Test
+    void generateToken_customerAccount_success() {
+        // given
+        Account account = new Account();
+        account.setId("cust-1");
+        account.setAccountType(AccountType.CUSTOMER);
+
+        // when
+        String token = tokenService.generateToken(account);
+
+        // then
+        assertNotNull(token);
+    }
+
 }
