@@ -9,7 +9,7 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.Optional;
 
-import com.theatermgnt.theatermgnt.authentication.dto.request.*;
+import com.theatermgnt.theatermgnt.authentication.dto.response.IntrospectResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,6 +26,7 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import com.theatermgnt.theatermgnt.account.entity.Account;
 import com.theatermgnt.theatermgnt.account.repository.AccountRepository;
+import com.theatermgnt.theatermgnt.authentication.dto.request.*;
 import com.theatermgnt.theatermgnt.authentication.dto.response.AuthenticationResponse;
 import com.theatermgnt.theatermgnt.authentication.entity.InvalidatedToken;
 import com.theatermgnt.theatermgnt.authentication.entity.OtpToken;
@@ -339,23 +340,18 @@ public class AuthenticationServiceImplTest {
         when(signedJWT.getJWTClaimsSet()).thenReturn(claimsSet);
 
         // Mock verifyToken()
-        doReturn(signedJWT)
-                .when(authenticationService)
-                .verifyToken("old-token", true);
+        doReturn(signedJWT).when(authenticationService).verifyToken("old-token", true);
 
         // Mock account
         Account account = new Account();
         account.setUsername("user1");
 
-        when(accountRepository.findByUsername("user1"))
-                .thenReturn(Optional.of(account));
+        when(accountRepository.findByUsername("user1")).thenReturn(Optional.of(account));
 
-        when(tokenService.generateToken(account))
-                .thenReturn("new-token");
+        when(tokenService.generateToken(account)).thenReturn("new-token");
 
         // WHEN
-        AuthenticationResponse response =
-                authenticationService.refreshToken(request);
+        AuthenticationResponse response = authenticationService.refreshToken(request);
 
         // THEN
         assertNotNull(response);
@@ -363,12 +359,9 @@ public class AuthenticationServiceImplTest {
         assertTrue(response.isAuthenticated());
 
         // Verify old token invalidated
-        verify(invalidatedTokenRepository).save(
-                argThat(token ->
-                        token.getId().equals("jti-123") &&
-                                token.getExpiryTime().equals(expiryTime)
-                )
-        );
+        verify(invalidatedTokenRepository)
+                .save(argThat(token ->
+                        token.getId().equals("jti-123") && token.getExpiryTime().equals(expiryTime)));
     }
 
     @Test
@@ -387,19 +380,41 @@ public class AuthenticationServiceImplTest {
 
         when(signedJWT.getJWTClaimsSet()).thenReturn(claimsSet);
 
-        doReturn(signedJWT)
-                .when(authenticationService)
-                .verifyToken("old-token", true);
+        doReturn(signedJWT).when(authenticationService).verifyToken("old-token", true);
 
-        when(accountRepository.findByUsername("unknown-user"))
-                .thenReturn(Optional.empty());
+        when(accountRepository.findByUsername("unknown-user")).thenReturn(Optional.empty());
 
         // WHEN + THEN
-        AppException exception = assertThrows(
-                AppException.class,
-                () -> authenticationService.refreshToken(request)
-        );
+        AppException exception = assertThrows(AppException.class, () -> authenticationService.refreshToken(request));
 
         assertEquals(ErrorCode.USER_NOT_EXISTED, exception.getErrorCode());
+    }
+
+    @Test
+    void introspect_validToken_returnTrue() throws Exception {
+        IntrospectRequest request = new IntrospectRequest();
+        request.setToken("valid-token");
+
+        SignedJWT signedJWT = mock(SignedJWT.class);
+
+        doReturn(signedJWT).when(authenticationService).verifyToken("valid-token", false);
+
+        IntrospectResponse response = authenticationService.introspect(request);
+
+        assertTrue(response.isValid());
+    }
+
+    @Test
+    void introspect_invalidToken_returnFalse() throws ParseException, JOSEException {
+        IntrospectRequest request = new IntrospectRequest();
+        request.setToken("invalid-token");
+
+        doThrow(new AppException(ErrorCode.UNAUTHENTICATED))
+                .when(authenticationService)
+                .verifyToken("invalid-token", false);
+
+        IntrospectResponse response = authenticationService.introspect(request);
+
+        assertFalse(response.isValid());
     }
 }
