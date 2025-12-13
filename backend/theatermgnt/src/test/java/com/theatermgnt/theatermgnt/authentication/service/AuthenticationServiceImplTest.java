@@ -9,6 +9,7 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.Optional;
 
+import com.theatermgnt.theatermgnt.authentication.dto.request.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,10 +26,6 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import com.theatermgnt.theatermgnt.account.entity.Account;
 import com.theatermgnt.theatermgnt.account.repository.AccountRepository;
-import com.theatermgnt.theatermgnt.authentication.dto.request.AuthenticationRequest;
-import com.theatermgnt.theatermgnt.authentication.dto.request.ForgotPasswordRequest;
-import com.theatermgnt.theatermgnt.authentication.dto.request.LogoutRequest;
-import com.theatermgnt.theatermgnt.authentication.dto.request.ResetPasswordRequest;
 import com.theatermgnt.theatermgnt.authentication.dto.response.AuthenticationResponse;
 import com.theatermgnt.theatermgnt.authentication.entity.InvalidatedToken;
 import com.theatermgnt.theatermgnt.authentication.entity.OtpToken;
@@ -323,4 +320,55 @@ public class AuthenticationServiceImplTest {
         assertEquals(6, otp.length());
         assertTrue(otp.matches("\\d{6}"));
     }
+
+    @Test
+    void refreshToken_success() throws Exception {
+        // GIVEN
+        RefreshTokenRequest request = new RefreshTokenRequest();
+        request.setToken("old-token");
+
+        SignedJWT signedJWT = mock(SignedJWT.class);
+        Date expiryTime = new Date(System.currentTimeMillis() + 60_000);
+
+        JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
+                .jwtID("jti-123")
+                .subject("user1")
+                .expirationTime(expiryTime)
+                .build();
+
+        when(signedJWT.getJWTClaimsSet()).thenReturn(claimsSet);
+
+        // Mock verifyToken()
+        doReturn(signedJWT)
+                .when(authenticationService)
+                .verifyToken("old-token", true);
+
+        // Mock account
+        Account account = new Account();
+        account.setUsername("user1");
+
+        when(accountRepository.findByUsername("user1"))
+                .thenReturn(Optional.of(account));
+
+        when(tokenService.generateToken(account))
+                .thenReturn("new-token");
+
+        // WHEN
+        AuthenticationResponse response =
+                authenticationService.refreshToken(request);
+
+        // THEN
+        assertNotNull(response);
+        assertEquals("new-token", response.getToken());
+        assertTrue(response.isAuthenticated());
+
+        // Verify old token invalidated
+        verify(invalidatedTokenRepository).save(
+                argThat(token ->
+                        token.getId().equals("jti-123") &&
+                                token.getExpiryTime().equals(expiryTime)
+                )
+        );
+    }
+
 }
