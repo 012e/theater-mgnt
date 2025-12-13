@@ -1,5 +1,27 @@
 package com.theatermgnt.theatermgnt.authentication.service;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
+import java.text.ParseException;
+import java.util.Date;
+import java.util.Optional;
+
+import com.theatermgnt.theatermgnt.authentication.dto.request.ForgotPasswordRequest;
+import com.theatermgnt.theatermgnt.authentication.entity.OtpToken;
+import com.theatermgnt.theatermgnt.authentication.event.PasswordResetEvent;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
@@ -11,28 +33,8 @@ import com.theatermgnt.theatermgnt.authentication.dto.response.AuthenticationRes
 import com.theatermgnt.theatermgnt.authentication.entity.InvalidatedToken;
 import com.theatermgnt.theatermgnt.authentication.repository.InvalidatedTokenRepository;
 import com.theatermgnt.theatermgnt.authentication.repository.OtpTokenRepository;
-
 import com.theatermgnt.theatermgnt.common.exception.AppException;
 import com.theatermgnt.theatermgnt.common.exception.ErrorCode;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-
-import java.text.ParseException;
-import java.util.Date;
-import java.util.Optional;
-
-import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class AuthenticationServiceImplTest {
@@ -47,7 +49,7 @@ public class AuthenticationServiceImplTest {
     InvalidatedTokenRepository invalidatedTokenRepository;
 
     @Mock
-    OtpTokenRepository  otpTokenRepository;
+    OtpTokenRepository otpTokenRepository;
 
     @Mock
     TokenService tokenService;
@@ -64,7 +66,7 @@ public class AuthenticationServiceImplTest {
 
     @Test
     void authenticate_success() {
-        //given
+        // given
         AuthenticationRequest request = new AuthenticationRequest();
         request.setLoginIdentifier("user1");
         request.setPassword("password");
@@ -72,15 +74,15 @@ public class AuthenticationServiceImplTest {
         Account account = new Account();
         account.setPassword(new BCryptPasswordEncoder().encode("password"));
 
-        when(accountRepository.findByUsernameOrEmailOrPhoneNumber(
-                any(), any(), any())).thenReturn(Optional.of(account));
+        when(accountRepository.findByUsernameOrEmailOrPhoneNumber(any(), any(), any()))
+                .thenReturn(Optional.of(account));
 
         when(tokenService.generateToken(account)).thenReturn("mock-token");
 
-        //when
+        // when
         AuthenticationResponse response = authenticationService.authenticate(request);
 
-        //then
+        // then
         assertTrue(response.isAuthenticated());
         assertEquals("mock-token", response.getToken());
     }
@@ -94,7 +96,8 @@ public class AuthenticationServiceImplTest {
         Account account = new Account();
         account.setPassword(new BCryptPasswordEncoder().encode("correct-password"));
 
-        when(accountRepository.findByUsernameOrEmailOrPhoneNumber(any(), any(), any())).thenReturn(Optional.of(account));
+        when(accountRepository.findByUsernameOrEmailOrPhoneNumber(any(), any(), any()))
+                .thenReturn(Optional.of(account));
 
         AppException ex = assertThrows(AppException.class, () -> authenticationService.authenticate(request));
 
@@ -107,7 +110,8 @@ public class AuthenticationServiceImplTest {
         request.setLoginIdentifier("user1");
         request.setPassword("password");
 
-        when(accountRepository.findByUsernameOrEmailOrPhoneNumber(any(), any(), any())).thenReturn(Optional.empty());
+        when(accountRepository.findByUsernameOrEmailOrPhoneNumber(any(), any(), any()))
+                .thenReturn(Optional.empty());
 
         AppException ex = assertThrows(AppException.class, () -> authenticationService.authenticate(request));
 
@@ -116,7 +120,7 @@ public class AuthenticationServiceImplTest {
 
     @Test
     void logout_success() throws ParseException, JOSEException {
-        //given
+        // given
         LogoutRequest request = new LogoutRequest();
         request.setToken("valid-token");
 
@@ -131,15 +135,13 @@ public class AuthenticationServiceImplTest {
 
         when(signedJWT.getJWTClaimsSet()).thenReturn(claimsSet);
 
-        //mock verifyToken
-        doReturn(signedJWT)
-                .when(authenticationService)
-                .verifyToken("valid-token", true);
+        // mock verifyToken
+        doReturn(signedJWT).when(authenticationService).verifyToken("valid-token", true);
 
-        //when
+        // when
         authenticationService.logout(request);
 
-        //then
+        // then
         ArgumentCaptor<InvalidatedToken> captor = ArgumentCaptor.forClass(InvalidatedToken.class);
         verify(invalidatedTokenRepository).save(captor.capture());
 
@@ -150,7 +152,7 @@ public class AuthenticationServiceImplTest {
 
     @Test
     void logout_tokenExpired_shouldNotSaveToken() throws ParseException, JOSEException {
-        //given
+        // given
         LogoutRequest request = new LogoutRequest();
         request.setToken("expired-token");
 
@@ -158,10 +160,48 @@ public class AuthenticationServiceImplTest {
                 .when(authenticationService)
                 .verifyToken("expired-token", true);
 
-        //when
+        // when
         authenticationService.logout(request);
 
-        //then
+        // then
         verify(invalidatedTokenRepository, never()).save(any());
+    }
+
+    @Test
+    void forgotPassword_success() {
+        ForgotPasswordRequest request = new ForgotPasswordRequest();
+        request.setLoginIdentifier("user1");
+
+        Account account = new Account();
+        account.setEmail("test@gmail.com");
+
+        when(accountRepository.findByUsernameOrEmailOrPhoneNumber(
+                any(), any(), any()))
+                .thenReturn(Optional.of(account));
+
+        when(otpTokenRepository.findByAccount(account))
+                .thenReturn(Optional.empty());
+
+        // when
+        authenticationService.forgotPassword(request);
+
+        // then
+        verify(otpTokenRepository).save(any(OtpToken.class));
+        verify(applicationEventPublisher).publishEvent(any(PasswordResetEvent.class));
+    }
+
+    @Test
+    void forgotPassword_userNotExist_noException() {
+        ForgotPasswordRequest request = new ForgotPasswordRequest();
+        request.setLoginIdentifier("unknown");
+
+        when(accountRepository.findByUsernameOrEmailOrPhoneNumber(
+                any(), any(), any()))
+                .thenReturn(Optional.empty());
+
+        assertDoesNotThrow(() -> authenticationService.forgotPassword(request));
+
+        verifyNoInteractions(otpTokenRepository);
+        verifyNoInteractions(applicationEventPublisher);
     }
 }
