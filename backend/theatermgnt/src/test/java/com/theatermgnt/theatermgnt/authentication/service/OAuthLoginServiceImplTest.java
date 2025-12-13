@@ -1,12 +1,10 @@
 package com.theatermgnt.theatermgnt.authentication.service;
 
-import com.theatermgnt.theatermgnt.account.entity.Account;
-import com.theatermgnt.theatermgnt.account.service.RegistrationService;
-import com.theatermgnt.theatermgnt.authentication.dto.response.AuthenticationResponse;
-import com.theatermgnt.theatermgnt.authentication.dto.response.ExchangeTokenResponse;
-import com.theatermgnt.theatermgnt.authentication.dto.response.OutBoundUserResponse;
-import com.theatermgnt.theatermgnt.authentication.repository.httpClient.OutboundIdentityClient;
-import com.theatermgnt.theatermgnt.authentication.repository.httpClient.OutboundUserClient;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,10 +12,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import com.theatermgnt.theatermgnt.account.entity.Account;
+import com.theatermgnt.theatermgnt.account.service.RegistrationService;
+import com.theatermgnt.theatermgnt.authentication.dto.response.AuthenticationResponse;
+import com.theatermgnt.theatermgnt.authentication.dto.response.ExchangeTokenResponse;
+import com.theatermgnt.theatermgnt.authentication.dto.response.OutBoundUserResponse;
+import com.theatermgnt.theatermgnt.authentication.repository.httpClient.OutboundIdentityClient;
+import com.theatermgnt.theatermgnt.authentication.repository.httpClient.OutboundUserClient;
 
 @ExtendWith(MockitoExtension.class)
 public class OAuthLoginServiceImplTest {
@@ -53,8 +54,7 @@ public class OAuthLoginServiceImplTest {
                 .accessToken("google-access-token")
                 .build();
 
-        when(outboundIdentityClient.exchangeToken(any()))
-                .thenReturn(tokenResponse);
+        when(outboundIdentityClient.exchangeToken(any())).thenReturn(tokenResponse);
 
         // 2. Google user inf
         OutBoundUserResponse userInfo = OutBoundUserResponse.builder()
@@ -63,62 +63,44 @@ public class OAuthLoginServiceImplTest {
                 .familyName("User")
                 .build();
 
-        when(outboundUserClient.getUserInfo("json", "google-access-token"))
-                .thenReturn(userInfo);
+        when(outboundUserClient.getUserInfo("json", "google-access-token")).thenReturn(userInfo);
 
         // 3. Account
         Account account = new Account();
         account.setId("acc-1");
 
-        when(registrationService.registerOAuthCustomer(any()))
-                .thenReturn(account);
+        when(registrationService.registerOAuthCustomer(any())).thenReturn(account);
 
         // 4. JWT token
-        when(tokenService.generateToken(account))
-                .thenReturn("jwt-token");
+        when(tokenService.generateToken(account)).thenReturn("jwt-token");
 
         // when
-        AuthenticationResponse response =
-                oAuthLoginService.loginWithGoogleCode(code);
+        AuthenticationResponse response = oAuthLoginService.loginWithGoogleCode(code);
 
         // then
         assertNotNull(response);
         assertEquals("jwt-token", response.getToken());
 
         verify(outboundIdentityClient).exchangeToken(any());
-        verify(outboundUserClient)
-                .getUserInfo("json", "google-access-token");
+        verify(outboundUserClient).getUserInfo("json", "google-access-token");
         verify(registrationService).registerOAuthCustomer(any());
         verify(tokenService).generateToken(account);
     }
 
     @Test
     void loginWithGoogleCode_exchangeTokenFail_throwException() {
-        when(outboundIdentityClient.exchangeToken(any()))
-                .thenThrow(new RuntimeException("Google error"));
+        when(outboundIdentityClient.exchangeToken(any())).thenThrow(new RuntimeException("Google error"));
 
-        assertThrows(
-                RuntimeException.class,
-                () -> oAuthLoginService.loginWithGoogleCode("code")
-        );
+        assertThrows(RuntimeException.class, () -> oAuthLoginService.loginWithGoogleCode("code"));
     }
 
     @Test
     void loginWithGoogleCode_getUserInfoFail_throwException() {
         when(outboundIdentityClient.exchangeToken(any()))
-                .thenReturn(ExchangeTokenResponse.builder()
-                        .accessToken("token")
-                        .build());
+                .thenReturn(ExchangeTokenResponse.builder().accessToken("token").build());
 
-        when(outboundUserClient.getUserInfo(any(), any()))
-                .thenThrow(new RuntimeException("Google userinfo error"));
+        when(outboundUserClient.getUserInfo(any(), any())).thenThrow(new RuntimeException("Google userinfo error"));
 
-        assertThrows(
-                RuntimeException.class,
-                () -> oAuthLoginService.loginWithGoogleCode("code")
-        );
+        assertThrows(RuntimeException.class, () -> oAuthLoginService.loginWithGoogleCode("code"));
     }
-
 }
-
-
