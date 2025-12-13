@@ -5,10 +5,12 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import java.text.ParseException;
+import java.time.Instant;
 import java.util.Date;
 import java.util.Optional;
 
 import com.theatermgnt.theatermgnt.authentication.dto.request.ForgotPasswordRequest;
+import com.theatermgnt.theatermgnt.authentication.dto.request.ResetPasswordRequest;
 import com.theatermgnt.theatermgnt.authentication.entity.OtpToken;
 import com.theatermgnt.theatermgnt.authentication.event.PasswordResetEvent;
 import org.junit.jupiter.api.BeforeEach;
@@ -204,4 +206,40 @@ public class AuthenticationServiceImplTest {
         verifyNoInteractions(otpTokenRepository);
         verifyNoInteractions(applicationEventPublisher);
     }
+
+    @Test
+    void resetPassword_otpExpired() {
+        ResetPasswordRequest request = new ResetPasswordRequest();
+        request.setLoginIdentifier("user1");
+        request.setOtpCode("123456");
+
+        Account account = new Account();
+
+        OtpToken otpToken = OtpToken.builder()
+                .account(account)
+                .code("123456")
+                .expiryTime(Instant.now().minusSeconds(60))
+                .build();
+
+        when(accountRepository.findByUsernameOrEmailOrPhoneNumber(
+                any(), any(), any()))
+                .thenReturn(Optional.of(account));
+
+        when(otpTokenRepository.findByAccount(account))
+                .thenReturn(Optional.of(otpToken));
+
+        AppException ex = assertThrows(AppException.class,
+                () -> authenticationService.resetPassword(request));
+
+        assertEquals(ErrorCode.OTP_EXPIRED, ex.getErrorCode());
+    }
+
+    @Test
+    void generateOtpCode_shouldBe6Digits() {
+        String otp = authenticationService.generateOtpCode();
+
+        assertEquals(6, otp.length());
+        assertTrue(otp.matches("\\d{6}"));
+    }
+
 }
