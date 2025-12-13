@@ -73,5 +73,15 @@ public class PermissionServiceImplTest {
         verify(permissionMapper).toPermissionResponse(p2);
     }
 
+    @Test
+    void delete_success() {
+        // Arrange
+        String permissionId = "PERMISSION_READ";
 
+        // Act
+        permissionService.delete(permissionId);
+
+        // Assert
+        verify(permissionRepository).deleteById(permissionId);
+    }
 }
