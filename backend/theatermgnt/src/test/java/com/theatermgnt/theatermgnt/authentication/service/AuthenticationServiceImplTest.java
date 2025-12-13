@@ -9,7 +9,6 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.Optional;
 
-import com.theatermgnt.theatermgnt.authentication.dto.response.IntrospectResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,6 +27,7 @@ import com.theatermgnt.theatermgnt.account.entity.Account;
 import com.theatermgnt.theatermgnt.account.repository.AccountRepository;
 import com.theatermgnt.theatermgnt.authentication.dto.request.*;
 import com.theatermgnt.theatermgnt.authentication.dto.response.AuthenticationResponse;
+import com.theatermgnt.theatermgnt.authentication.dto.response.IntrospectResponse;
 import com.theatermgnt.theatermgnt.authentication.entity.InvalidatedToken;
 import com.theatermgnt.theatermgnt.authentication.entity.OtpToken;
 import com.theatermgnt.theatermgnt.authentication.event.PasswordResetEvent;
