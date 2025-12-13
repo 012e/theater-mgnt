@@ -103,6 +103,21 @@ public class OAuthLoginServiceImplTest {
         );
     }
 
+    @Test
+    void loginWithGoogleCode_getUserInfoFail_throwException() {
+        when(outboundIdentityClient.exchangeToken(any()))
+                .thenReturn(ExchangeTokenResponse.builder()
+                        .accessToken("token")
+                        .build());
+
+        when(outboundUserClient.getUserInfo(any(), any()))
+                .thenThrow(new RuntimeException("Google userinfo error"));
+
+        assertThrows(
+                RuntimeException.class,
+                () -> oAuthLoginService.loginWithGoogleCode("code")
+        );
+    }
 
 }
 
