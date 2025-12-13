@@ -268,6 +268,35 @@ public class AuthenticationServiceImplTest {
     }
 
     @Test
+    void resetPassword_invalidOtp_shouldThrow() {
+        // given
+        ResetPasswordRequest request = new ResetPasswordRequest();
+        request.setLoginIdentifier("user1");
+        request.setOtpCode("000000");
+
+        Account account = new Account();
+
+        OtpToken otp = new OtpToken();
+        otp.setCode("123456");
+        otp.setExpiryTime(Instant.now().plusSeconds(300));
+
+        when(accountRepository.findByUsernameOrEmailOrPhoneNumber(
+                any(), any(), any()))
+                .thenReturn(Optional.of(account));
+
+        when(otpTokenRepository.findByAccount(account))
+                .thenReturn(Optional.of(otp));
+
+        // when & then
+        AppException ex = assertThrows(AppException.class,
+                () -> authenticationService.resetPassword(request));
+
+        assertEquals(ErrorCode.INVALID_OTP, ex.getErrorCode());
+        verify(otpTokenRepository, never()).delete(any());
+        verify(accountRepository, never()).save(any());
+    }
+
+    @Test
     void generateOtpCode_shouldBe6Digits() {
         String otp = authenticationService.generateOtpCode();
 
