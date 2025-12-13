@@ -9,10 +9,6 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.Optional;
 
-import com.theatermgnt.theatermgnt.authentication.dto.request.ForgotPasswordRequest;
-import com.theatermgnt.theatermgnt.authentication.dto.request.ResetPasswordRequest;
-import com.theatermgnt.theatermgnt.authentication.entity.OtpToken;
-import com.theatermgnt.theatermgnt.authentication.event.PasswordResetEvent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,9 +26,13 @@ import com.nimbusds.jwt.SignedJWT;
 import com.theatermgnt.theatermgnt.account.entity.Account;
 import com.theatermgnt.theatermgnt.account.repository.AccountRepository;
 import com.theatermgnt.theatermgnt.authentication.dto.request.AuthenticationRequest;
+import com.theatermgnt.theatermgnt.authentication.dto.request.ForgotPasswordRequest;
 import com.theatermgnt.theatermgnt.authentication.dto.request.LogoutRequest;
+import com.theatermgnt.theatermgnt.authentication.dto.request.ResetPasswordRequest;
 import com.theatermgnt.theatermgnt.authentication.dto.response.AuthenticationResponse;
 import com.theatermgnt.theatermgnt.authentication.entity.InvalidatedToken;
+import com.theatermgnt.theatermgnt.authentication.entity.OtpToken;
+import com.theatermgnt.theatermgnt.authentication.event.PasswordResetEvent;
 import com.theatermgnt.theatermgnt.authentication.repository.InvalidatedTokenRepository;
 import com.theatermgnt.theatermgnt.authentication.repository.OtpTokenRepository;
 import com.theatermgnt.theatermgnt.common.exception.AppException;
@@ -177,12 +177,10 @@ public class AuthenticationServiceImplTest {
         Account account = new Account();
         account.setEmail("test@gmail.com");
 
-        when(accountRepository.findByUsernameOrEmailOrPhoneNumber(
-                any(), any(), any()))
+        when(accountRepository.findByUsernameOrEmailOrPhoneNumber(any(), any(), any()))
                 .thenReturn(Optional.of(account));
 
-        when(otpTokenRepository.findByAccount(account))
-                .thenReturn(Optional.empty());
+        when(otpTokenRepository.findByAccount(account)).thenReturn(Optional.empty());
 
         // when
         authenticationService.forgotPassword(request);
@@ -197,14 +195,30 @@ public class AuthenticationServiceImplTest {
         ForgotPasswordRequest request = new ForgotPasswordRequest();
         request.setLoginIdentifier("unknown");
 
-        when(accountRepository.findByUsernameOrEmailOrPhoneNumber(
-                any(), any(), any()))
+        when(accountRepository.findByUsernameOrEmailOrPhoneNumber(any(), any(), any()))
                 .thenReturn(Optional.empty());
 
         assertDoesNotThrow(() -> authenticationService.forgotPassword(request));
 
         verifyNoInteractions(otpTokenRepository);
         verifyNoInteractions(applicationEventPublisher);
+    }
+
+    @Test
+    void resetPassword_accountNotFound_shouldThrowException() {
+        // given
+        ResetPasswordRequest request = new ResetPasswordRequest();
+        request.setLoginIdentifier("not-exist");
+
+        when(accountRepository.findByUsernameOrEmailOrPhoneNumber(
+                any(), any(), any()))
+                .thenReturn(Optional.empty());
+
+        // when & then
+        AppException ex = assertThrows(AppException.class,
+                () -> authenticationService.resetPassword(request));
+
+        assertEquals(ErrorCode.USER_NOT_EXISTED, ex.getErrorCode());
     }
 
     @Test
@@ -221,15 +235,12 @@ public class AuthenticationServiceImplTest {
                 .expiryTime(Instant.now().minusSeconds(60))
                 .build();
 
-        when(accountRepository.findByUsernameOrEmailOrPhoneNumber(
-                any(), any(), any()))
+        when(accountRepository.findByUsernameOrEmailOrPhoneNumber(any(), any(), any()))
                 .thenReturn(Optional.of(account));
 
-        when(otpTokenRepository.findByAccount(account))
-                .thenReturn(Optional.of(otpToken));
+        when(otpTokenRepository.findByAccount(account)).thenReturn(Optional.of(otpToken));
 
-        AppException ex = assertThrows(AppException.class,
-                () -> authenticationService.resetPassword(request));
+        AppException ex = assertThrows(AppException.class, () -> authenticationService.resetPassword(request));
 
         assertEquals(ErrorCode.OTP_EXPIRED, ex.getErrorCode());
     }
@@ -241,5 +252,4 @@ public class AuthenticationServiceImplTest {
         assertEquals(6, otp.length());
         assertTrue(otp.matches("\\d{6}"));
     }
-
 }
