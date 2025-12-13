@@ -91,4 +91,17 @@ public class AuthenticationServiceImplTest {
 
         assertEquals(ErrorCode.UNAUTHENTICATED, ex.getErrorCode());
     }
+
+    @Test
+    void authenticate_userNotFound() {
+        AuthenticationRequest request = new AuthenticationRequest();
+        request.setLoginIdentifier("user1");
+        request.setPassword("password");
+
+        when(accountRepository.findByUsernameOrEmailOrPhoneNumber(any(), any(), any())).thenReturn(Optional.empty());
+
+        AppException ex = assertThrows(AppException.class, () -> authenticationService.authenticate(request));
+
+        assertEquals(ErrorCode.USER_NOT_EXISTED, ex.getErrorCode());
+    }
 }
