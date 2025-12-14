@@ -2,7 +2,6 @@ package com.theatermgnt.theatermgnt.payment.dto.request;
 
 import java.math.BigDecimal;
 
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 import lombok.*;
@@ -17,10 +16,8 @@ public class PaymentCreationRequest {
     @NotNull(message = "INVALID_PAYMENT_AMOUNT")
     BigDecimal amount;
 
-    @NotBlank(message = "INVALID_PAYMENT_CURRENCY")
-    String currency;
-
     String customerId;
 
-    String transactionId;
+    // Original price before discount (for validation purposes)
+    BigDecimal originalPrice;
 }

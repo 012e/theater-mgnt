@@ -1,10 +1,14 @@
 package com.theatermgnt.theatermgnt.payment.service;
 
 import java.time.LocalDateTime;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.theatermgnt.theatermgnt.caculate.CalculateService;
 import com.theatermgnt.theatermgnt.common.exception.AppException;
 import com.theatermgnt.theatermgnt.common.exception.ErrorCode;
 import com.theatermgnt.theatermgnt.payment.dto.request.BankTransferDetails;
@@ -32,12 +36,11 @@ public class PaymentServiceImpl implements PaymentService {
 
     PaymentMapper paymentMapper;
 
+    CalculateService calculateService;
+
     @Override
     public PaymentResponse createPayment(PaymentCreationRequest request) {
-        if (request.getTransactionId() != null && paymentRepository.existsByTransactionId(request.getTransactionId())) {
-            throw new AppException(ErrorCode.valueOf("CINEMA_EXISTED"));
-        }
-
+        validateCommon(request);
         Payment payment = paymentMapper.toPayment(request);
         payment.setStatus(com.theatermgnt.theatermgnt.payment.enums.PaymentStatus.PENDING);
         payment.setCreatedAt(LocalDateTime.now());
@@ -56,7 +59,7 @@ public class PaymentServiceImpl implements PaymentService {
     public PaymentResponse getPayment(String paymentId) {
         return paymentMapper.toPaymentResponse(paymentRepository
                 .findById(paymentId)
-                .orElseThrow(() -> new AppException(ErrorCode.valueOf("CINEMA_NOT_EXISTED"))));
+                .orElseThrow(() -> new AppException(ErrorCode.PAYMENT_NOT_EXISTED)));
     }
 
     @Override
@@ -68,7 +71,7 @@ public class PaymentServiceImpl implements PaymentService {
     public PaymentResponse updatePayment(String paymentId, PaymentUpdateRequest request) {
         Payment payment = paymentRepository
                 .findById(paymentId)
-                .orElseThrow(() -> new AppException(ErrorCode.valueOf("CINEMA_NOT_EXISTED")));
+                .orElseThrow(() -> new AppException(ErrorCode.PAYMENT_NOT_EXISTED));
 
         paymentMapper.updatePayment(payment, request);
 
@@ -78,23 +81,40 @@ public class PaymentServiceImpl implements PaymentService {
     // New method-specific processors
     @Override
     public PaymentResponse processCashPayment(PaymentCreationRequest request) {
-        validateCommon(request);
-        // For cash, mark completed immediately (business rule could vary)
-        Payment payment = paymentMapper.toPayment(request);
-        payment.setMethod(com.theatermgnt.theatermgnt.payment.enums.PaymentMethod.CASH);
-        payment.setStatus(com.theatermgnt.theatermgnt.payment.enums.PaymentStatus.COMPLETED);
-        payment.setCreatedAt(LocalDateTime.now());
-        return paymentMapper.toPaymentResponse(paymentRepository.save(payment));
+        log.info("Start processing cash payment for customerId={}, amount={}",
+                request != null ? request.getCustomerId() : null,
+                request != null ? request.getAmount() : null);
+        try {
+            validateCommon(request);
+            validatePaymentAmount(request);
+            Payment payment = paymentMapper.toPayment(request);
+            payment.setMethod(com.theatermgnt.theatermgnt.payment.enums.PaymentMethod.CASH);
+            payment.setStatus(com.theatermgnt.theatermgnt.payment.enums.PaymentStatus.COMPLETED);
+            payment.setCreatedAt(LocalDateTime.now());
+
+            Payment savedPayment = paymentRepository.save(payment);
+            log.info("Cash payment processed successfully, paymentId={}, status={}",
+                    savedPayment.getId(), savedPayment.getStatus());
+            return paymentMapper.toPaymentResponse(savedPayment);
+        } catch (AppException ex) {
+            log.warn("Cash payment failed with business error: errorCode={}, message={}",
+                    ex.getErrorCode(), ex.getMessage());
+            throw ex;
+        } catch (RuntimeException ex) {
+            log.error("Cash payment processing failed with unexpected error for customerId={}, amount={}",
+                    request != null ? request.getCustomerId() : null,
+                    request != null ? request.getAmount() : null,
+                    ex);
+            throw ex;
+        }
     }
 
     @Override
     public PaymentResponse processCreditCardPayment(PaymentCreationRequest request, CardDetails cardDetails) {
         validateCommon(request);
-        if (cardDetails == null) {
-            throw new AppException(ErrorCode.valueOf("INVALID_REQUEST"));
-        }
+        validatePaymentAmount(request);
+        validateCardDetails(cardDetails);
 
-        // Basic mask and validation could be applied here. Real gateway call omitted.
         Payment payment = paymentMapper.toPayment(request);
         payment.setMethod(com.theatermgnt.theatermgnt.payment.enums.PaymentMethod.CREDIT_CARD);
         payment.setStatus(com.theatermgnt.theatermgnt.payment.enums.PaymentStatus.PENDING);
@@ -108,9 +128,8 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public PaymentResponse processEwalletPayment(PaymentCreationRequest request, EwalletDetails ewalletDetails) {
         validateCommon(request);
-        if (ewalletDetails == null) {
-            throw new AppException(ErrorCode.valueOf("INVALID_REQUEST"));
-        }
+        validatePaymentAmount(request);
+        validateEwalletDetails(ewalletDetails);
 
         Payment payment = paymentMapper.toPayment(request);
         payment.setMethod(com.theatermgnt.theatermgnt.payment.enums.PaymentMethod.WALLET);
@@ -125,9 +144,8 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public PaymentResponse processBankTransferPayment(PaymentCreationRequest request, BankTransferDetails bankDetails) {
         validateCommon(request);
-        if (bankDetails == null) {
-            throw new AppException(ErrorCode.valueOf("INVALID_REQUEST"));
-        }
+        validatePaymentAmount(request);
+        validateBankTransferDetails(bankDetails);
 
         Payment payment = paymentMapper.toPayment(request);
         payment.setMethod(com.theatermgnt.theatermgnt.payment.enums.PaymentMethod.BANK_TRANSFER);
@@ -140,11 +158,146 @@ public class PaymentServiceImpl implements PaymentService {
 
     // Common validations
     private void validateCommon(PaymentCreationRequest request) {
-        if (request.getTransactionId() != null && paymentRepository.existsByTransactionId(request.getTransactionId())) {
-            throw new AppException(ErrorCode.valueOf("CINEMA_EXISTED"));
+        if (request == null) {
+            throw new AppException(ErrorCode.INVALID_REQUEST);
         }
         if (request.getAmount() == null || request.getAmount().doubleValue() <= 0) {
-            throw new AppException(ErrorCode.valueOf("INVALID_PAYMENT_AMOUNT"));
+            throw new AppException(ErrorCode.INVALID_PAYMENT_AMOUNT);
         }
+    }
+
+    private void validateCardDetails(CardDetails cardDetails) {
+        if (cardDetails == null) {
+            throw new AppException(ErrorCode.INVALID_CARD_DETAILS);
+        }
+
+        // Validate card number (consolidated checks)
+        validateAndCleanCardNumber(cardDetails.getCardNumber());
+
+        // Validate other required fields
+        validateNotEmpty(cardDetails.getCardHolderName(), ErrorCode.INVALID_CARD_HOLDER);
+        validateCardExpiry(cardDetails.getExpiry());
+        validateCardCvv(cardDetails.getCvv());
+    }
+
+    private void validateEwalletDetails(EwalletDetails ewalletDetails) {
+        if (ewalletDetails == null) {
+            throw new AppException(ErrorCode.INVALID_EWALLET_DETAILS);
+        }
+
+        validateNotEmpty(ewalletDetails.getWalletId(), ErrorCode.INVALID_EWALLET_ID);
+
+        // Optional provider validation
+        if (ewalletDetails.getProvider() != null
+                && !ewalletDetails.getProvider().trim().isEmpty()) {
+            String provider = ewalletDetails.getProvider().toUpperCase();
+            if (!List.of("PAYPAL", "MOMO", "ZALOPAY", "VNPAY", "GOOGLEPAY", "APPLEPAY")
+                    .contains(provider)) {
+                throw new AppException(ErrorCode.INVALID_EWALLET_PROVIDER);
+            }
+        }
+    }
+
+    private void validateBankTransferDetails(BankTransferDetails bankDetails) {
+        if (bankDetails == null) {
+            throw new AppException(ErrorCode.INVALID_BANK_DETAILS);
+        }
+
+        validateNotEmpty(bankDetails.getAccountNumber(), ErrorCode.INVALID_BANK_ACCOUNT);
+        validateNotEmpty(bankDetails.getBankName(), ErrorCode.INVALID_BANK_NAME);
+    }
+
+    // Utility validation methods
+    private void validateNotEmpty(String value, ErrorCode errorCode) {
+        if (value == null || value.trim().isEmpty()) {
+            throw new AppException(errorCode);
+        }
+    }
+
+    private String validateAndCleanCardNumber(String cardNumber) {
+        if (cardNumber == null || cardNumber.trim().isEmpty()) {
+            throw new AppException(ErrorCode.INVALID_CARD_NUMBER);
+        }
+
+        String cleaned = cardNumber.replaceAll("\\s+", "");
+        if (cleaned.length() < 12 || cleaned.length() > 19 || !isValidCardNumberLuhn(cleaned)) {
+            throw new AppException(ErrorCode.INVALID_CARD_NUMBER);
+        }
+
+        return cleaned;
+    }
+
+    private void validateCardExpiry(String expiry) {
+        if (expiry == null || expiry.trim().isEmpty() || !expiry.matches("^(0[1-9]|1[0-2])/([0-9]{2})$")) {
+            throw new AppException(ErrorCode.INVALID_CARD_EXPIRY);
+        }
+
+        if (!isCardNotExpired(expiry)) {
+            throw new AppException(ErrorCode.CARD_EXPIRED);
+        }
+    }
+
+    private void validateCardCvv(String cvv) {
+        if (cvv == null || cvv.trim().isEmpty() || !cvv.matches("^[0-9]{3,4}$")) {
+            throw new AppException(ErrorCode.INVALID_CARD_CVV);
+        }
+    }
+
+    /**
+     * Luhn algorithm to validate card number
+     */
+    private boolean isValidCardNumberLuhn(String cardNumber) {
+        if (!cardNumber.matches("^[0-9]+$")) {
+            return false;
+        }
+
+        int sum = 0;
+        boolean alternate = false;
+
+        for (int i = cardNumber.length() - 1; i >= 0; i--) {
+            int digit = Character.getNumericValue(cardNumber.charAt(i));
+
+            if (alternate) {
+                digit *= 2;
+                if (digit > 9) {
+                    digit = (digit % 10) + 1;
+                }
+            }
+
+            sum += digit;
+            alternate = !alternate;
+        }
+
+        return (sum % 10 == 0);
+    }
+
+    /**
+     * Check if the card expiry date is in the future
+     */
+    private boolean isCardNotExpired(String expiry) {
+        try {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/yy");
+            YearMonth expiryDate = YearMonth.parse(expiry, formatter);
+            YearMonth currentDate = YearMonth.now();
+            return !expiryDate.isBefore(currentDate);
+        } catch (DateTimeParseException e) {
+            return false;
+        }
+    }
+
+    /**
+     * Validate that the transferred payment amount is sufficient after applying discounts
+     * @param request The payment creation request containing amount, customerId, and originalPrice
+     * @throws AppException if the transferred amount is insufficient
+     */
+    private void validatePaymentAmount(PaymentCreationRequest request) {
+        // If originalPrice is not provided, skip discount validation
+        if (request.getOriginalPrice() == null || request.getCustomerId() == null) {
+            return;
+        }
+
+        // Use CalculateService to validate if transferred amount is sufficient
+        calculateService.validatePaymentAmountSufficient(
+                request.getOriginalPrice(), request.getAmount(), request.getCustomerId());
     }
 }

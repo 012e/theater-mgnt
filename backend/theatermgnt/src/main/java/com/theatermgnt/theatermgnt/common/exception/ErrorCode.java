@@ -93,9 +93,27 @@ public enum ErrorCode {
     INVALID_MOVIE_GENRES(2035, "Movie must have between {min} and {max} genres", HttpStatus.BAD_REQUEST),
     // -----
     CANNOT_SEND_EMAIL(3001, "Cannot send email", HttpStatus.BAD_REQUEST),
-    // --- Added missing codes used by payment service ---
+    // --- Payment related error codes ---
     INVALID_REQUEST(9001, "Invalid request", HttpStatus.BAD_REQUEST),
     INVALID_PAYMENT_AMOUNT(2101, "Invalid payment amount", HttpStatus.BAD_REQUEST),
+    PAYMENT_NOT_EXISTED(2102, "Payment not existed", HttpStatus.NOT_FOUND),
+    INVALID_CARD_NUMBER(2103, "Invalid card number", HttpStatus.BAD_REQUEST),
+    INVALID_CARD_HOLDER(2104, "Invalid card holder name", HttpStatus.BAD_REQUEST),
+    INVALID_CARD_EXPIRY(2105, "Invalid card expiry date", HttpStatus.BAD_REQUEST),
+    INVALID_CARD_EXPIRY_FORMAT(2106, "Invalid card expiry format. Expected MM/YY", HttpStatus.BAD_REQUEST),
+    CARD_EXPIRED(2107, "Card has expired", HttpStatus.BAD_REQUEST),
+    INVALID_CARD_CVV(2108, "Invalid CVV", HttpStatus.BAD_REQUEST),
+    INVALID_EWALLET_ID(2109, "Invalid e-wallet ID", HttpStatus.BAD_REQUEST),
+    INVALID_EWALLET_PROVIDER(2110, "Invalid e-wallet provider", HttpStatus.BAD_REQUEST),
+    INVALID_BANK_ACCOUNT(2111, "Invalid bank account number", HttpStatus.BAD_REQUEST),
+    INVALID_BANK_NAME(2112, "Invalid bank name", HttpStatus.BAD_REQUEST),
+    INVALID_CARD_DETAILS(2113, "Card details are required for credit card payment", HttpStatus.BAD_REQUEST),
+    INVALID_EWALLET_DETAILS(2114, "E-wallet details are required for e-wallet payment", HttpStatus.BAD_REQUEST),
+    INVALID_BANK_DETAILS(2115, "Bank transfer details are required for bank transfer payment", HttpStatus.BAD_REQUEST),
+    INSUFFICIENT_PAYMENT_AMOUNT(
+            2116, "Payment amount is insufficient. Required: {required}, Provided: {provided}", HttpStatus.BAD_REQUEST),
+    ORIGINAL_PRICE_REQUIRED(2117, "Original price is required", HttpStatus.BAD_REQUEST),
+    CUSTOMER_ID_REQUIRED(2118, "Customer ID is required", HttpStatus.BAD_REQUEST),
     ;
     private int code;
     private String message;
