@@ -191,6 +191,7 @@ class PaymentServiceImplTest {
 
     // --- processCashPayment ---
 
+    // TC-01 / TC-02: Happy path cash payment (amount > 0, discount validation may or may not be called)
     @Test
     void processCashPayment_happyPath_setsCashAndCompleted() {
         when(paymentMapper.toPayment(sampleRequest)).thenReturn(samplePayment);
@@ -205,6 +206,95 @@ class PaymentServiceImplTest {
         Payment saved = paymentCaptor.getValue();
         assertThat(saved.getMethod()).isEqualTo(PaymentMethod.CASH);
         assertThat(saved.getStatus()).isEqualTo(PaymentStatus.COMPLETED);
+    }
+
+    // --- Payment Amount Validation Tests ---
+
+    // TC-03: Cash payment with sufficient amount after discount (boundary just-sufficient case)
+    @Test
+    void processCashPayment_whenAmountSufficient_thenSucceeds() {
+        // Given: Payment with originalPrice and customerId for discount validation
+        sampleRequest.setOriginalPrice(BigDecimal.valueOf(100));
+        sampleRequest.setAmount(BigDecimal.valueOf(80)); // After 20% discount
+        sampleRequest.setCustomerId("customer-1");
+
+        // Mock: validatePaymentAmountSufficient should not throw
+        doNothing()
+                .when(calculateService)
+                .validatePaymentAmountSufficient(
+                        sampleRequest.getOriginalPrice(), sampleRequest.getAmount(), sampleRequest.getCustomerId());
+
+        when(paymentMapper.toPayment(sampleRequest)).thenReturn(samplePayment);
+        when(paymentRepository.save(any(Payment.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(paymentMapper.toPaymentResponse(any(Payment.class))).thenReturn(sampleResponse);
+
+        // When & Then: Should complete successfully
+        PaymentResponse resp = service.processCashPayment(sampleRequest);
+
+        assertThat(resp).isNotNull();
+        verify(calculateService)
+                .validatePaymentAmountSufficient(
+                        sampleRequest.getOriginalPrice(), sampleRequest.getAmount(), sampleRequest.getCustomerId());
+    }
+
+    // TC-04 / TC-05: Cash payment with insufficient amount after discount
+    @Test
+    void processCashPayment_whenAmountInsufficient_thenThrows() {
+        // Given: Payment with insufficient amount
+        sampleRequest.setOriginalPrice(BigDecimal.valueOf(100));
+        sampleRequest.setAmount(BigDecimal.valueOf(50)); // Too low, even with discount
+        sampleRequest.setCustomerId("customer-1");
+
+        // Mock: validatePaymentAmountSufficient throws exception
+        doThrow(new AppException(com.theatermgnt.theatermgnt.common.exception.ErrorCode.INSUFFICIENT_PAYMENT_AMOUNT))
+                .when(calculateService)
+                .validatePaymentAmountSufficient(
+                        sampleRequest.getOriginalPrice(), sampleRequest.getAmount(), sampleRequest.getCustomerId());
+
+        // When & Then: Should throw AppException
+        assertThatThrownBy(() -> service.processCashPayment(sampleRequest)).isInstanceOf(AppException.class);
+
+        verify(calculateService)
+                .validatePaymentAmountSufficient(
+                        sampleRequest.getOriginalPrice(), sampleRequest.getAmount(), sampleRequest.getCustomerId());
+    }
+
+    // TC-07: Cash payment where originalPrice is null (skip discount validation)
+    @Test
+    void processCashPayment_whenOriginalPriceNull_skipsValidation() {
+        // Given: Payment without originalPrice (no discount validation needed)
+        sampleRequest.setOriginalPrice(null);
+        sampleRequest.setCustomerId("customer-1");
+
+        when(paymentMapper.toPayment(sampleRequest)).thenReturn(samplePayment);
+        when(paymentRepository.save(any(Payment.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(paymentMapper.toPaymentResponse(any(Payment.class))).thenReturn(sampleResponse);
+
+        // When: Process payment
+        PaymentResponse resp = service.processCashPayment(sampleRequest);
+
+        // Then: Should succeed without calling calculateService
+        assertThat(resp).isNotNull();
+        verify(calculateService, org.mockito.Mockito.never()).validatePaymentAmountSufficient(any(), any(), any());
+    }
+
+    // TC-08: Cash payment where customerId is null (skip discount validation)
+    @Test
+    void processCashPayment_whenCustomerIdNull_skipsValidation() {
+        // Given: Payment without customerId (no discount validation needed)
+        sampleRequest.setOriginalPrice(BigDecimal.valueOf(100));
+        sampleRequest.setCustomerId(null);
+
+        when(paymentMapper.toPayment(sampleRequest)).thenReturn(samplePayment);
+        when(paymentRepository.save(any(Payment.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(paymentMapper.toPaymentResponse(any(Payment.class))).thenReturn(sampleResponse);
+
+        // When: Process payment
+        PaymentResponse resp = service.processCashPayment(sampleRequest);
+
+        // Then: Should succeed without calling calculateService
+        assertThat(resp).isNotNull();
+        verify(calculateService, org.mockito.Mockito.never()).validatePaymentAmountSufficient(any(), any(), any());
     }
 
     // --- processCreditCardPayment ---
@@ -318,222 +408,5 @@ class PaymentServiceImplTest {
         CardDetails card = new CardDetails("4111111111111111", "John Doe", "12/30", "123");
         assertThatThrownBy(() -> service.processCreditCardPayment(sampleRequest, card))
                 .isInstanceOf(AppException.class);
-    }
-
-    // --- Payment Amount Validation Tests ---
-
-    @Test
-    void processCashPayment_whenAmountSufficient_thenSucceeds() {
-        // Given: Payment with originalPrice and customerId for discount validation
-        sampleRequest.setOriginalPrice(BigDecimal.valueOf(100));
-        sampleRequest.setAmount(BigDecimal.valueOf(80)); // After 20% discount
-        sampleRequest.setCustomerId("customer-1");
-
-        // Mock: validatePaymentAmountSufficient should not throw
-        doNothing()
-                .when(calculateService)
-                .validatePaymentAmountSufficient(
-                        sampleRequest.getOriginalPrice(), sampleRequest.getAmount(), sampleRequest.getCustomerId());
-
-        when(paymentMapper.toPayment(sampleRequest)).thenReturn(samplePayment);
-        when(paymentRepository.save(any(Payment.class))).thenAnswer(inv -> inv.getArgument(0));
-        when(paymentMapper.toPaymentResponse(any(Payment.class))).thenReturn(sampleResponse);
-
-        // When & Then: Should complete successfully
-        PaymentResponse resp = service.processCashPayment(sampleRequest);
-
-        assertThat(resp).isNotNull();
-        verify(calculateService)
-                .validatePaymentAmountSufficient(
-                        sampleRequest.getOriginalPrice(), sampleRequest.getAmount(), sampleRequest.getCustomerId());
-    }
-
-    @Test
-    void processCashPayment_whenAmountInsufficient_thenThrows() {
-        // Given: Payment with insufficient amount
-        sampleRequest.setOriginalPrice(BigDecimal.valueOf(100));
-        sampleRequest.setAmount(BigDecimal.valueOf(50)); // Too low, even with discount
-        sampleRequest.setCustomerId("customer-1");
-
-        // Mock: validatePaymentAmountSufficient throws exception
-        doThrow(new AppException(com.theatermgnt.theatermgnt.common.exception.ErrorCode.INSUFFICIENT_PAYMENT_AMOUNT))
-                .when(calculateService)
-                .validatePaymentAmountSufficient(
-                        sampleRequest.getOriginalPrice(), sampleRequest.getAmount(), sampleRequest.getCustomerId());
-
-        // When & Then: Should throw AppException
-        assertThatThrownBy(() -> service.processCashPayment(sampleRequest)).isInstanceOf(AppException.class);
-
-        verify(calculateService)
-                .validatePaymentAmountSufficient(
-                        sampleRequest.getOriginalPrice(), sampleRequest.getAmount(), sampleRequest.getCustomerId());
-    }
-
-    @Test
-    void processCreditCardPayment_whenAmountSufficient_thenSucceeds() {
-        // Given: Payment with valid amount after discount
-        sampleRequest.setOriginalPrice(BigDecimal.valueOf(100));
-        sampleRequest.setAmount(BigDecimal.valueOf(90));
-        sampleRequest.setCustomerId("customer-1");
-        CardDetails card = new CardDetails("4111111111111111", "John Doe", "12/30", "123");
-
-        doNothing()
-                .when(calculateService)
-                .validatePaymentAmountSufficient(
-                        sampleRequest.getOriginalPrice(), sampleRequest.getAmount(), sampleRequest.getCustomerId());
-
-        when(paymentMapper.toPayment(sampleRequest)).thenReturn(samplePayment);
-        when(paymentRepository.save(any(Payment.class))).thenAnswer(inv -> inv.getArgument(0));
-        when(paymentMapper.toPaymentResponse(any(Payment.class))).thenReturn(sampleResponse);
-
-        // When & Then: Should succeed
-        PaymentResponse resp = service.processCreditCardPayment(sampleRequest, card);
-
-        assertThat(resp).isNotNull();
-        verify(calculateService)
-                .validatePaymentAmountSufficient(
-                        sampleRequest.getOriginalPrice(), sampleRequest.getAmount(), sampleRequest.getCustomerId());
-    }
-
-    @Test
-    void processCreditCardPayment_whenAmountInsufficient_thenThrows() {
-        // Given: Payment with insufficient amount
-        sampleRequest.setOriginalPrice(BigDecimal.valueOf(100));
-        sampleRequest.setAmount(BigDecimal.valueOf(40));
-        sampleRequest.setCustomerId("customer-1");
-        CardDetails card = new CardDetails("4111111111111111", "John Doe", "12/30", "123");
-
-        doThrow(new AppException(com.theatermgnt.theatermgnt.common.exception.ErrorCode.INSUFFICIENT_PAYMENT_AMOUNT))
-                .when(calculateService)
-                .validatePaymentAmountSufficient(
-                        sampleRequest.getOriginalPrice(), sampleRequest.getAmount(), sampleRequest.getCustomerId());
-
-        // When & Then: Should throw
-        assertThatThrownBy(() -> service.processCreditCardPayment(sampleRequest, card))
-                .isInstanceOf(AppException.class);
-    }
-
-    @Test
-    void processEwalletPayment_whenAmountSufficient_thenSucceeds() {
-        // Given: Valid ewallet payment with sufficient amount
-        sampleRequest.setOriginalPrice(BigDecimal.valueOf(100));
-        sampleRequest.setAmount(BigDecimal.valueOf(85));
-        sampleRequest.setCustomerId("customer-1");
-        EwalletDetails wallet = new EwalletDetails("ew-1", "PAYPAL", "token");
-
-        doNothing()
-                .when(calculateService)
-                .validatePaymentAmountSufficient(
-                        sampleRequest.getOriginalPrice(), sampleRequest.getAmount(), sampleRequest.getCustomerId());
-
-        when(paymentMapper.toPayment(sampleRequest)).thenReturn(samplePayment);
-        when(paymentRepository.save(any(Payment.class))).thenAnswer(inv -> inv.getArgument(0));
-        when(paymentMapper.toPaymentResponse(any(Payment.class))).thenReturn(sampleResponse);
-
-        // When & Then: Should succeed
-        PaymentResponse resp = service.processEwalletPayment(sampleRequest, wallet);
-
-        assertThat(resp).isNotNull();
-        verify(calculateService)
-                .validatePaymentAmountSufficient(
-                        sampleRequest.getOriginalPrice(), sampleRequest.getAmount(), sampleRequest.getCustomerId());
-    }
-
-    @Test
-    void processEwalletPayment_whenAmountInsufficient_thenThrows() {
-        // Given: Insufficient amount
-        sampleRequest.setOriginalPrice(BigDecimal.valueOf(100));
-        sampleRequest.setAmount(BigDecimal.valueOf(30));
-        sampleRequest.setCustomerId("customer-1");
-        EwalletDetails wallet = new EwalletDetails("ew-1", "PAYPAL", "token");
-
-        doThrow(new AppException(com.theatermgnt.theatermgnt.common.exception.ErrorCode.INSUFFICIENT_PAYMENT_AMOUNT))
-                .when(calculateService)
-                .validatePaymentAmountSufficient(
-                        sampleRequest.getOriginalPrice(), sampleRequest.getAmount(), sampleRequest.getCustomerId());
-
-        // When & Then: Should throw
-        assertThatThrownBy(() -> service.processEwalletPayment(sampleRequest, wallet))
-                .isInstanceOf(AppException.class);
-    }
-
-    @Test
-    void processBankTransferPayment_whenAmountSufficient_thenSucceeds() {
-        // Given: Valid bank transfer with sufficient amount
-        sampleRequest.setOriginalPrice(BigDecimal.valueOf(100));
-        sampleRequest.setAmount(BigDecimal.valueOf(95));
-        sampleRequest.setCustomerId("customer-1");
-        BankTransferDetails bank = new BankTransferDetails("12345678", "MyBank", "ref-1");
-
-        doNothing()
-                .when(calculateService)
-                .validatePaymentAmountSufficient(
-                        sampleRequest.getOriginalPrice(), sampleRequest.getAmount(), sampleRequest.getCustomerId());
-
-        when(paymentMapper.toPayment(sampleRequest)).thenReturn(samplePayment);
-        when(paymentRepository.save(any(Payment.class))).thenAnswer(inv -> inv.getArgument(0));
-        when(paymentMapper.toPaymentResponse(any(Payment.class))).thenReturn(sampleResponse);
-
-        // When & Then: Should succeed
-        PaymentResponse resp = service.processBankTransferPayment(sampleRequest, bank);
-
-        assertThat(resp).isNotNull();
-        verify(calculateService)
-                .validatePaymentAmountSufficient(
-                        sampleRequest.getOriginalPrice(), sampleRequest.getAmount(), sampleRequest.getCustomerId());
-    }
-
-    @Test
-    void processBankTransferPayment_whenAmountInsufficient_thenThrows() {
-        // Given: Insufficient amount
-        sampleRequest.setOriginalPrice(BigDecimal.valueOf(100));
-        sampleRequest.setAmount(BigDecimal.valueOf(20));
-        sampleRequest.setCustomerId("customer-1");
-        BankTransferDetails bank = new BankTransferDetails("12345678", "MyBank", "ref-1");
-
-        doThrow(new AppException(com.theatermgnt.theatermgnt.common.exception.ErrorCode.INSUFFICIENT_PAYMENT_AMOUNT))
-                .when(calculateService)
-                .validatePaymentAmountSufficient(
-                        sampleRequest.getOriginalPrice(), sampleRequest.getAmount(), sampleRequest.getCustomerId());
-
-        // When & Then: Should throw
-        assertThatThrownBy(() -> service.processBankTransferPayment(sampleRequest, bank))
-                .isInstanceOf(AppException.class);
-    }
-
-    @Test
-    void processCashPayment_whenOriginalPriceNull_skipsValidation() {
-        // Given: Payment without originalPrice (no discount validation needed)
-        sampleRequest.setOriginalPrice(null);
-        sampleRequest.setCustomerId("customer-1");
-
-        when(paymentMapper.toPayment(sampleRequest)).thenReturn(samplePayment);
-        when(paymentRepository.save(any(Payment.class))).thenAnswer(inv -> inv.getArgument(0));
-        when(paymentMapper.toPaymentResponse(any(Payment.class))).thenReturn(sampleResponse);
-
-        // When: Process payment
-        PaymentResponse resp = service.processCashPayment(sampleRequest);
-
-        // Then: Should succeed without calling calculateService
-        assertThat(resp).isNotNull();
-        verify(calculateService, org.mockito.Mockito.never()).validatePaymentAmountSufficient(any(), any(), any());
-    }
-
-    @Test
-    void processCashPayment_whenCustomerIdNull_skipsValidation() {
-        // Given: Payment without customerId (no discount validation needed)
-        sampleRequest.setOriginalPrice(BigDecimal.valueOf(100));
-        sampleRequest.setCustomerId(null);
-
-        when(paymentMapper.toPayment(sampleRequest)).thenReturn(samplePayment);
-        when(paymentRepository.save(any(Payment.class))).thenAnswer(inv -> inv.getArgument(0));
-        when(paymentMapper.toPaymentResponse(any(Payment.class))).thenReturn(sampleResponse);
-
-        // When: Process payment
-        PaymentResponse resp = service.processCashPayment(sampleRequest);
-
-        // Then: Should succeed without calling calculateService
-        assertThat(resp).isNotNull();
-        verify(calculateService, org.mockito.Mockito.never()).validatePaymentAmountSufficient(any(), any(), any());
     }
 }

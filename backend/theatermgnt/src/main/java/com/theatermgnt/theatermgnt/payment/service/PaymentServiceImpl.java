@@ -81,14 +81,30 @@ public class PaymentServiceImpl implements PaymentService {
     // New method-specific processors
     @Override
     public PaymentResponse processCashPayment(PaymentCreationRequest request) {
-        validateCommon(request);
-        validatePaymentAmount(request);
-        // For cash, mark completed immediately (business rule could vary)
-        Payment payment = paymentMapper.toPayment(request);
-        payment.setMethod(com.theatermgnt.theatermgnt.payment.enums.PaymentMethod.CASH);
-        payment.setStatus(com.theatermgnt.theatermgnt.payment.enums.PaymentStatus.COMPLETED);
-        payment.setCreatedAt(LocalDateTime.now());
-        return paymentMapper.toPaymentResponse(paymentRepository.save(payment));
+        log.info("Start processing cash payment for customerId={}, amount={}",
+                request != null ? request.getCustomerId() : null,
+                request != null ? request.getAmount() : null);
+        try {
+            validateCommon(request);
+            validatePaymentAmount(request);
+            // For cash, mark completed immediately (business rule could vary)
+            Payment payment = paymentMapper.toPayment(request);
+            payment.setMethod(com.theatermgnt.theatermgnt.payment.enums.PaymentMethod.CASH);
+            payment.setStatus(com.theatermgnt.theatermgnt.payment.enums.PaymentStatus.COMPLETED);
+            payment.setCreatedAt(LocalDateTime.now());
+
+            Payment savedPayment = paymentRepository.save(payment);
+            log.info("Cash payment processed successfully, paymentId={}, status={}",
+                    savedPayment.getId(), savedPayment.getStatus());
+            return paymentMapper.toPaymentResponse(savedPayment);
+        } catch (AppException ex) {
+            log.warn("Cash payment failed with business error: errorCode={}, message={}",
+                    ex.getErrorCode(), ex.getMessage());
+            throw ex;
+        } catch (RuntimeException ex) {
+            log.error("Cash payment processing failed with unexpected error", ex);
+            throw ex;
+        }
     }
 
     @Override
