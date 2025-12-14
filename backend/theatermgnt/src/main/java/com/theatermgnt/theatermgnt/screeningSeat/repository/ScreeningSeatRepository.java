@@ -1,18 +1,21 @@
 package com.theatermgnt.theatermgnt.screeningSeat.repository;
 
-import com.theatermgnt.theatermgnt.screeningSeat.entity.ScreeningSeat;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import com.theatermgnt.theatermgnt.screeningSeat.entity.ScreeningSeat;
 
-public interface ScreeningSeatRepository extends JpaRepository<ScreeningSeat,String> {
+public interface ScreeningSeatRepository extends JpaRepository<ScreeningSeat, String> {
     List<ScreeningSeat> findByScreeningId(String screeningId);
+
     List<ScreeningSeat> findBySeatId(String seatId);
-//    List<ScreeningSeat> findByBookingId(String bookingId);
+    //    List<ScreeningSeat> findByBookingId(String bookingId);
     boolean existsByScreeningIdAndSeatId(String screeningId, String seatId);
+
     void deleteByScreeningId(String screeningId);
 
     @Transactional
@@ -23,13 +26,13 @@ public interface ScreeningSeatRepository extends JpaRepository<ScreeningSeat,Str
     @Query("SELECT COUNT(s) > 0 FROM ScreeningSeat s WHERE s.screening.id = :screeningId AND s.status = 'SOLD'")
     boolean existsSoldSeat(String screeningId);
 
-
     @Modifying
-    @Query("""
-        UPDATE ScreeningSeat ss
-        SET ss.status = 'LOCKED'
-        WHERE ss.screening.id = :screeningId
-          AND ss.status = 'AVAILABLE'
-    """)
+    @Query(
+            """
+		UPDATE ScreeningSeat ss
+		SET ss.status = 'LOCKED'
+		WHERE ss.screening.id = :screeningId
+		AND ss.status = 'AVAILABLE'
+	""")
     void lockAvailableSeatsByScreening(String screeningId);
 }

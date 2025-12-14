@@ -1,5 +1,19 @@
 package com.theatermgnt.theatermgnt.authorization.service;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import com.theatermgnt.theatermgnt.authorization.dto.request.RoleRequest;
 import com.theatermgnt.theatermgnt.authorization.dto.response.RoleResponse;
 import com.theatermgnt.theatermgnt.authorization.entity.Permission;
@@ -9,20 +23,6 @@ import com.theatermgnt.theatermgnt.authorization.repository.PermissionRepository
 import com.theatermgnt.theatermgnt.authorization.repository.RoleRepository;
 import com.theatermgnt.theatermgnt.common.exception.AppException;
 import com.theatermgnt.theatermgnt.common.exception.ErrorCode;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import javax.management.relation.RoleResult;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class RoleServiceImplTest {
@@ -39,9 +39,8 @@ public class RoleServiceImplTest {
     RoleMapper roleMapper;
 
     @Test
-    void createRole_success()
-    {
-        //arrange
+    void createRole_success() {
+        // arrange
         RoleRequest request = new RoleRequest();
         request.setPermissions(Set.of("PERM1", "PERM2"));
 
@@ -56,10 +55,10 @@ public class RoleServiceImplTest {
         when(roleRepository.save(role)).thenReturn(savedRole);
         when(roleMapper.toRoleResponse(savedRole)).thenReturn(response);
 
-        //act
+        // act
         RoleResponse result = roleService.create(request);
 
-        //assert
+        // assert
         assertNotNull(result);
 
         verify(roleMapper).toRole(request);
@@ -69,20 +68,18 @@ public class RoleServiceImplTest {
     }
 
     @Test
-    void getAllRoles_success()
-    {
-        //arrange
+    void getAllRoles_success() {
+        // arrange
         Role role1 = new Role();
         Role role2 = new Role();
 
         when(roleRepository.findAll()).thenReturn(List.of(role1, role2));
-        when(roleMapper.toRoleResponse(any(Role.class)))
-                .thenReturn(new RoleResponse());
+        when(roleMapper.toRoleResponse(any(Role.class))).thenReturn(new RoleResponse());
 
-        //act
+        // act
         List<RoleResponse> result = roleService.getAll();
 
-        //assert
+        // assert
         assertEquals(2, result.size());
 
         verify(roleRepository).findAll();
@@ -90,9 +87,8 @@ public class RoleServiceImplTest {
     }
 
     @Test
-    void updateRole_success()
-    {
-        //arrange
+    void updateRole_success() {
+        // arrange
         String roleId = "ROLE_1";
 
         RoleRequest request = new RoleRequest();
@@ -102,19 +98,17 @@ public class RoleServiceImplTest {
         Role savedRole = new Role();
         RoleResponse response = new RoleResponse();
 
-        when(roleRepository.findById(roleId))
-                .thenReturn(Optional.of(existingRole));
+        when(roleRepository.findById(roleId)).thenReturn(Optional.of(existingRole));
 
-        when(permissionRepository.findAllById(request.getPermissions()))
-                .thenReturn(List.of(new Permission()));
+        when(permissionRepository.findAllById(request.getPermissions())).thenReturn(List.of(new Permission()));
 
         when(roleRepository.save(existingRole)).thenReturn(savedRole);
         when(roleMapper.toRoleResponse(savedRole)).thenReturn(response);
 
-        //act
+        // act
         RoleResponse result = roleService.update(roleId, request);
 
-        //assert
+        // assert
         assertNotNull(result);
 
         verify(roleRepository).findById(roleId);
@@ -125,18 +119,16 @@ public class RoleServiceImplTest {
     }
 
     @Test
-    void updateRole_roleNotFound(){
-        //arrange
+    void updateRole_roleNotFound() {
+        // arrange
         String roleId = "NOT_EXIST";
 
         RoleRequest request = new RoleRequest();
 
-        when(roleRepository.findById(roleId))
-                .thenReturn(Optional.empty());
+        when(roleRepository.findById(roleId)).thenReturn(Optional.empty());
 
-        //act + assert
-        AppException exception
-                = assertThrows(AppException.class, ()->roleService.update(roleId, request));
+        // act + assert
+        AppException exception = assertThrows(AppException.class, () -> roleService.update(roleId, request));
 
         assertEquals(ErrorCode.ROLE_NOT_FOUND, exception.getErrorCode());
         verify(roleRepository).findById(roleId);
@@ -155,4 +147,3 @@ public class RoleServiceImplTest {
         verify(roleRepository).deleteById(roleId);
     }
 }
-

@@ -20,6 +20,8 @@ public interface CustomerService {
 
     List<CustomerResponse> getAll();
 
+    boolean isCustomer(String usernameOrEmail);
+
     @Transactional
     CustomerResponse updateCustomerProfile(String customerId, CustomerProfileUpdateRequest request);
 }

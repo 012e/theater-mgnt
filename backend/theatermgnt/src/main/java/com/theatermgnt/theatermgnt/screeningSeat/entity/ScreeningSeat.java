@@ -1,14 +1,17 @@
 package com.theatermgnt.theatermgnt.screeningSeat.entity;
 
+import jakarta.persistence.*;
+
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
+
 import com.theatermgnt.theatermgnt.common.entity.BaseEntity;
 import com.theatermgnt.theatermgnt.screening.entity.Screening;
 import com.theatermgnt.theatermgnt.screeningSeat.enums.ScreeningSeatStatus;
 import com.theatermgnt.theatermgnt.seat.entity.Seat;
-import jakarta.persistence.*;
+
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.Where;
 
 @Setter
 @Getter

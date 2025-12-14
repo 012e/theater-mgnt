@@ -47,7 +47,8 @@ public enum ErrorCode {
     COMBO_NOT_EXISTED(2012, "Seat not existed", HttpStatus.BAD_REQUEST),
     COMBO_ITEM_EXISTED(2011, "Seat existed", HttpStatus.BAD_REQUEST),
     COMBO_ITEM_NOT_EXISTED(2012, "Seat not existed", HttpStatus.BAD_REQUEST),
-
+    INVALID_IDENTIFIER(2099, "Input is null or empty", HttpStatus.BAD_REQUEST),
+    CUSTOMER_NOT_FOUND(2098, "Account exists but customer profile not found", HttpStatus.BAD_REQUEST),
     // AgeRating
     AGERATING_EXISTED(2015, "Age rating existed", HttpStatus.BAD_REQUEST),
     AGERATING_NOT_EXISTED(2016, "Age rating not existed", HttpStatus.NOT_FOUND),
@@ -56,6 +57,18 @@ public enum ErrorCode {
     INVALID_AGERATING_DESCRIPTION(
             2019, "Age rating description must not exceed {max} characters", HttpStatus.BAD_REQUEST),
     AGERATING_CODE_EXISTED(2036, "Age rating code existed", HttpStatus.BAD_REQUEST),
+    SCREENING_EXISTED(2013, "Screening existed", HttpStatus.BAD_REQUEST),
+    SCREENING_NOT_EXISTED(2014, "Screening not existed", HttpStatus.BAD_REQUEST),
+    SCREENING_SEAT_NOT_EXISTED(4001, "Screening seat not existed", HttpStatus.BAD_REQUEST),
+    SCREENING_SEAT_EXISTED(4002, "Screening seat existed", HttpStatus.BAD_REQUEST),
+    SCREENING_CANNOT_UPDATE(4003, "Screening's status must be scheduled before updating", HttpStatus.BAD_REQUEST),
+    SCREENING_TIME_INVALID(4004, "Screening's time must be in the future", HttpStatus.BAD_REQUEST),
+    SCREENING_TIME_OVERLAP(4005, "Already has the same screening's time", HttpStatus.BAD_REQUEST),
+    SEAT_NOT_IN_ROOM(4006, "This seat is not in our rooms", HttpStatus.BAD_REQUEST),
+    SCREENING_SEAT_INVALID_STATUS_CHANGE(4007, "Cannot change screening seat's status (SOLD)", HttpStatus.BAD_REQUEST),
+    SCREENING_SEAT_CANNOT_DELETE(
+            4008, "Only screening seats with AVAILABLE status can be deleted", HttpStatus.BAD_REQUEST),
+    INVALID_PRICE(2100, "Price is null or negative", HttpStatus.BAD_REQUEST),
     // Genre
     GENRE_EXISTED(2020, "Genre existed", HttpStatus.BAD_REQUEST),
     GENRE_NOT_EXISTED(2021, "Genre not existed", HttpStatus.NOT_FOUND),

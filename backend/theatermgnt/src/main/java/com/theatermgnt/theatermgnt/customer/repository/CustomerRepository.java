@@ -10,4 +10,10 @@ import com.theatermgnt.theatermgnt.customer.entity.Customer;
 @Repository
 public interface CustomerRepository extends JpaRepository<Customer, String> {
     Optional<Customer> findByAccountId(String accountId);
+
+    boolean existsByAccountUsername(String username);
+
+    boolean existsByAccountEmail(String email);
+
+    boolean existsByAccountId(String accountId);
 }

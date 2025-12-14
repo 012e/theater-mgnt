@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import com.theatermgnt.theatermgnt.account.entity.Account;
+import com.theatermgnt.theatermgnt.account.repository.AccountRepository;
 import com.theatermgnt.theatermgnt.common.exception.AppException;
 import com.theatermgnt.theatermgnt.common.exception.ErrorCode;
 import com.theatermgnt.theatermgnt.customer.dto.request.CustomerAccountCreationRequest;
@@ -29,7 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 public class CustomerServiceImpl implements CustomerService {
     CustomerRepository customerRepository;
     CustomerMapper customerMapper;
-
+    AccountRepository accountRepository;
     /// CREATE CUSTOMER PROFILE
     @Transactional
     @Override
@@ -79,5 +80,32 @@ public class CustomerServiceImpl implements CustomerService {
                 customerRepository.findById(customerId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         customerMapper.updateCustomerProfile(customerToUpdate, request);
         return customerMapper.toCustomerResponse(customerRepository.save(customerToUpdate));
+    }
+
+    /// VERIFY CUSTOMER EXISTENCE
+    @Override
+    public boolean isCustomer(String usernameOrEmail) {
+
+        if (!StringUtils.hasText(usernameOrEmail)) {
+            throw new AppException(ErrorCode.INVALID_IDENTIFIER);
+        }
+
+        boolean isEmail = usernameOrEmail.contains("@");
+
+        Account account = isEmail
+                ? accountRepository.findByEmail(usernameOrEmail).orElseThrow(() -> {
+                    return new AppException(ErrorCode.ACCOUNT_NOT_FOUND);
+                })
+                : accountRepository.findByUsername(usernameOrEmail).orElseThrow(() -> {
+                    return new AppException(ErrorCode.ACCOUNT_NOT_FOUND);
+                });
+
+        boolean isCustomer = customerRepository.existsByAccountId(account.getId());
+
+        if (!isCustomer) {
+            throw new AppException(ErrorCode.CUSTOMER_NOT_FOUND);
+        }
+
+        return true;
     }
 }
