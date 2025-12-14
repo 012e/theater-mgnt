@@ -146,54 +146,13 @@ public class PaymentServiceImpl implements PaymentService {
             throw new AppException(ErrorCode.INVALID_CARD_DETAILS);
         }
 
-        // Validate card number
-        if (cardDetails.getCardNumber() == null
-                || cardDetails.getCardNumber().trim().isEmpty()) {
-            throw new AppException(ErrorCode.INVALID_CARD_NUMBER);
-        }
+        // Validate card number (consolidated checks)
+        validateAndCleanCardNumber(cardDetails.getCardNumber());
 
-        String cardNumber = cardDetails.getCardNumber().replaceAll("\\s+", "");
-        if (cardNumber.length() < 12 || cardNumber.length() > 19) {
-            throw new AppException(ErrorCode.INVALID_CARD_NUMBER);
-        }
-
-        // Basic Luhn algorithm check
-        if (!isValidCardNumberLuhn(cardNumber)) {
-            throw new AppException(ErrorCode.INVALID_CARD_NUMBER);
-        }
-
-        // Validate card holder name
-        if (cardDetails.getCardHolderName() == null
-                || cardDetails.getCardHolderName().trim().isEmpty()) {
-            throw new AppException(ErrorCode.INVALID_CARD_HOLDER);
-        }
-
-        // Validate expiry
-        if (cardDetails.getExpiry() == null || cardDetails.getExpiry().trim().isEmpty()) {
-            throw new AppException(ErrorCode.INVALID_CARD_EXPIRY);
-        }
-
-        if (!cardDetails.getExpiry().matches("^(0[1-9]|1[0-2])/([0-9]{2})$")) {
-            throw new AppException(ErrorCode.INVALID_CARD_EXPIRY_FORMAT);
-        }
-
-        // Check if card is expired
-        if (!isCardNotExpired(cardDetails.getExpiry())) {
-            throw new AppException(ErrorCode.CARD_EXPIRED);
-        }
-
-        // Validate CVV
-        if (cardDetails.getCvv() == null || cardDetails.getCvv().trim().isEmpty()) {
-            throw new AppException(ErrorCode.INVALID_CARD_CVV);
-        }
-
-        if (cardDetails.getCvv().length() < 3 || cardDetails.getCvv().length() > 4) {
-            throw new AppException(ErrorCode.INVALID_CARD_CVV);
-        }
-
-        if (!cardDetails.getCvv().matches("^[0-9]{3,4}$")) {
-            throw new AppException(ErrorCode.INVALID_CARD_CVV);
-        }
+        // Validate other required fields
+        validateNotEmpty(cardDetails.getCardHolderName(), ErrorCode.INVALID_CARD_HOLDER);
+        validateCardExpiry(cardDetails.getExpiry());
+        validateCardCvv(cardDetails.getCvv());
     }
 
     private void validateEwalletDetails(EwalletDetails ewalletDetails) {
@@ -201,11 +160,9 @@ public class PaymentServiceImpl implements PaymentService {
             throw new AppException(ErrorCode.INVALID_EWALLET_DETAILS);
         }
 
-        if (ewalletDetails.getWalletId() == null
-                || ewalletDetails.getWalletId().trim().isEmpty()) {
-            throw new AppException(ErrorCode.INVALID_EWALLET_ID);
-        }
+        validateNotEmpty(ewalletDetails.getWalletId(), ErrorCode.INVALID_EWALLET_ID);
 
+        // Optional provider validation
         if (ewalletDetails.getProvider() != null
                 && !ewalletDetails.getProvider().trim().isEmpty()) {
             String provider = ewalletDetails.getProvider().toUpperCase();
@@ -221,14 +178,43 @@ public class PaymentServiceImpl implements PaymentService {
             throw new AppException(ErrorCode.INVALID_BANK_DETAILS);
         }
 
-        if (bankDetails.getAccountNumber() == null
-                || bankDetails.getAccountNumber().trim().isEmpty()) {
-            throw new AppException(ErrorCode.INVALID_BANK_ACCOUNT);
+        validateNotEmpty(bankDetails.getAccountNumber(), ErrorCode.INVALID_BANK_ACCOUNT);
+        validateNotEmpty(bankDetails.getBankName(), ErrorCode.INVALID_BANK_NAME);
+    }
+
+    // Utility validation methods
+    private void validateNotEmpty(String value, ErrorCode errorCode) {
+        if (value == null || value.trim().isEmpty()) {
+            throw new AppException(errorCode);
+        }
+    }
+
+    private String validateAndCleanCardNumber(String cardNumber) {
+        if (cardNumber == null || cardNumber.trim().isEmpty()) {
+            throw new AppException(ErrorCode.INVALID_CARD_NUMBER);
         }
 
-        if (bankDetails.getBankName() == null
-                || bankDetails.getBankName().trim().isEmpty()) {
-            throw new AppException(ErrorCode.INVALID_BANK_NAME);
+        String cleaned = cardNumber.replaceAll("\\s+", "");
+        if (cleaned.length() < 12 || cleaned.length() > 19 || !isValidCardNumberLuhn(cleaned)) {
+            throw new AppException(ErrorCode.INVALID_CARD_NUMBER);
+        }
+
+        return cleaned;
+    }
+
+    private void validateCardExpiry(String expiry) {
+        if (expiry == null || expiry.trim().isEmpty() || !expiry.matches("^(0[1-9]|1[0-2])/([0-9]{2})$")) {
+            throw new AppException(ErrorCode.INVALID_CARD_EXPIRY);
+        }
+
+        if (!isCardNotExpired(expiry)) {
+            throw new AppException(ErrorCode.CARD_EXPIRED);
+        }
+    }
+
+    private void validateCardCvv(String cvv) {
+        if (cvv == null || cvv.trim().isEmpty() || !cvv.matches("^[0-9]{3,4}$")) {
+            throw new AppException(ErrorCode.INVALID_CARD_CVV);
         }
     }
 
