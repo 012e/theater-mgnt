@@ -20,6 +20,8 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import com.theatermgnt.theatermgnt.common.exception.AppException;
 import com.theatermgnt.theatermgnt.payment.dto.request.BankTransferDetails;
@@ -33,8 +35,6 @@ import com.theatermgnt.theatermgnt.payment.enums.PaymentMethod;
 import com.theatermgnt.theatermgnt.payment.enums.PaymentStatus;
 import com.theatermgnt.theatermgnt.payment.mapper.PaymentMapper;
 import com.theatermgnt.theatermgnt.payment.repository.PaymentRepository;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -74,7 +74,6 @@ class PaymentServiceImplTest {
         sampleResponse.setCurrency(samplePayment.getCurrency());
         sampleResponse.setMethod(samplePayment.getMethod());
         sampleResponse.setStatus(samplePayment.getStatus());
-        sampleResponse.setTransactionId(samplePayment.getTransactionId());
     }
 
     // --- createPayment tests ---
@@ -82,12 +81,27 @@ class PaymentServiceImplTest {
     // --- getPayments tests ---
     @Test
     void getPayments_happyPath_mapsAll() {
-        Payment p2 = Payment.builder().id("p-2").amount(BigDecimal.ONE).currency("USD").method(PaymentMethod.CASH)
-                .status(PaymentStatus.COMPLETED).build();
+        Payment p2 = Payment.builder()
+                .id("p-2")
+                .amount(BigDecimal.ONE)
+                .currency("USD")
+                .method(PaymentMethod.CASH)
+                .status(PaymentStatus.COMPLETED)
+                .build();
         when(paymentRepository.findAll()).thenReturn(List.of(samplePayment, p2));
         when(paymentMapper.toPaymentResponse(samplePayment)).thenReturn(sampleResponse);
-        when(paymentMapper.toPaymentResponse(p2)).thenReturn(new PaymentResponse("p-2", BigDecimal.ONE, "USD",
-                PaymentMethod.CASH, PaymentStatus.COMPLETED, null, null, null, LocalDateTime.now(), null));
+        when(paymentMapper.toPaymentResponse(p2))
+                .thenReturn(new PaymentResponse(
+                        "p-2",
+                        BigDecimal.ONE,
+                        "USD",
+                        PaymentMethod.CASH,
+                        PaymentStatus.COMPLETED,
+                        null,
+                        null,
+                        null,
+                        LocalDateTime.now(),
+                        null));
 
         List<PaymentResponse> results = service.getPayments();
 
@@ -194,7 +208,8 @@ class PaymentServiceImplTest {
 
     @Test
     void processCreditCardPayment_whenCardDetailsNull_thenThrows() {
-        assertThatThrownBy(() -> service.processCreditCardPayment(sampleRequest, null)).isInstanceOf(AppException.class);
+        assertThatThrownBy(() -> service.processCreditCardPayment(sampleRequest, null))
+                .isInstanceOf(AppException.class);
     }
 
     @Test
@@ -217,7 +232,8 @@ class PaymentServiceImplTest {
 
     @Test
     void processEwalletPayment_whenEwalletDetailsNull_thenThrows() {
-        assertThatThrownBy(() -> service.processEwalletPayment(sampleRequest, null)).isInstanceOf(AppException.class);
+        assertThatThrownBy(() -> service.processEwalletPayment(sampleRequest, null))
+                .isInstanceOf(AppException.class);
     }
 
     @Test
@@ -240,7 +256,8 @@ class PaymentServiceImplTest {
 
     @Test
     void processBankTransferPayment_whenBankDetailsNull_thenThrows() {
-        assertThatThrownBy(() -> service.processBankTransferPayment(sampleRequest, null)).isInstanceOf(AppException.class);
+        assertThatThrownBy(() -> service.processBankTransferPayment(sampleRequest, null))
+                .isInstanceOf(AppException.class);
     }
 
     @Test
@@ -265,8 +282,7 @@ class PaymentServiceImplTest {
     void processCreditCardPayment_whenAmountInvalid_thenThrows() {
         sampleRequest.setAmount(BigDecimal.ZERO);
         CardDetails card = new CardDetails("4111111111111111", "John Doe", "12/25", "123");
-        assertThatThrownBy(() -> service.processCreditCardPayment(sampleRequest, card)).isInstanceOf(AppException.class);
+        assertThatThrownBy(() -> service.processCreditCardPayment(sampleRequest, card))
+                .isInstanceOf(AppException.class);
     }
-
 }
-

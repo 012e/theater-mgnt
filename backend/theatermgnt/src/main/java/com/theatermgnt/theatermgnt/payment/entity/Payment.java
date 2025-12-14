@@ -40,9 +40,6 @@ public class Payment extends BaseEntity {
     @Column(nullable = false)
     PaymentStatus status;
 
-    @Column(name = "transaction_id")
-    String transactionId;
-
     @Column(name = "booking_id")
     String bookingId;
 
