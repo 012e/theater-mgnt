@@ -5,6 +5,6 @@ public enum PaymentMethod {
     DEBIT_CARD,
     WALLET,
     CASH,
-    ONLINE
+    ONLINE,
+    BANK_TRANSFER
 }
-

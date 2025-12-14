@@ -43,10 +43,22 @@ public enum ErrorCode {
     PRICECONFIG_EXISTED(2008, "Price config existed", HttpStatus.BAD_REQUEST),
     SEAT_NOT_EXISTED(2009, "Seat not existed", HttpStatus.BAD_REQUEST),
     SEAT_EXISTED(2010, "Seat existed", HttpStatus.BAD_REQUEST),
+    SEAT_NOT_IN_ROOM(2011, "Seat is not in the specified room", HttpStatus.BAD_REQUEST),
     COMBO_EXISTED(2011, "Seat existed", HttpStatus.BAD_REQUEST),
     COMBO_NOT_EXISTED(2012, "Seat not existed", HttpStatus.BAD_REQUEST),
+    // Screening seat specific
+    SCREENING_SEAT_EXISTED(2040, "Screening seat existed", HttpStatus.BAD_REQUEST),
+    SCREENING_SEAT_NOT_EXISTED(2041, "Screening seat not existed", HttpStatus.NOT_FOUND),
+    SCREENING_SEAT_INVALID_STATUS_CHANGE(2042, "Invalid screening seat status change", HttpStatus.BAD_REQUEST),
+    SCREENING_SEAT_CANNOT_DELETE(2043, "Cannot delete screening seat", HttpStatus.BAD_REQUEST),
     COMBO_ITEM_EXISTED(2011, "Seat existed", HttpStatus.BAD_REQUEST),
     COMBO_ITEM_NOT_EXISTED(2012, "Seat not existed", HttpStatus.BAD_REQUEST),
+
+    // Screening specific
+    SCREENING_TIME_INVALID(2050, "Screening time is invalid", HttpStatus.BAD_REQUEST),
+    SCREENING_TIME_OVERLAP(2051, "Screening time overlaps with existing screening", HttpStatus.BAD_REQUEST),
+    SCREENING_NOT_EXISTED(2052, "Screening not existed", HttpStatus.NOT_FOUND),
+    SCREENING_CANNOT_UPDATE(2053, "Cannot update screening in current status", HttpStatus.BAD_REQUEST),
 
     // AgeRating
     AGERATING_EXISTED(2015, "Age rating existed", HttpStatus.BAD_REQUEST),
@@ -77,6 +89,9 @@ public enum ErrorCode {
     INVALID_MOVIE_GENRES(2035, "Movie must have between {min} and {max} genres", HttpStatus.BAD_REQUEST),
     // -----
     CANNOT_SEND_EMAIL(3001, "Cannot send email", HttpStatus.BAD_REQUEST),
+    // --- Added missing codes used by payment service ---
+    INVALID_REQUEST(9001, "Invalid request", HttpStatus.BAD_REQUEST),
+    INVALID_PAYMENT_AMOUNT(2101, "Invalid payment amount", HttpStatus.BAD_REQUEST),
     ;
     private int code;
     private String message;
