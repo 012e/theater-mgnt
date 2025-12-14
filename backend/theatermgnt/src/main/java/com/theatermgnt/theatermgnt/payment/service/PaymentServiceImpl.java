@@ -87,7 +87,6 @@ public class PaymentServiceImpl implements PaymentService {
         try {
             validateCommon(request);
             validatePaymentAmount(request);
-            // For cash, mark completed immediately (business rule could vary)
             Payment payment = paymentMapper.toPayment(request);
             payment.setMethod(com.theatermgnt.theatermgnt.payment.enums.PaymentMethod.CASH);
             payment.setStatus(com.theatermgnt.theatermgnt.payment.enums.PaymentStatus.COMPLETED);
@@ -102,7 +101,10 @@ public class PaymentServiceImpl implements PaymentService {
                     ex.getErrorCode(), ex.getMessage());
             throw ex;
         } catch (RuntimeException ex) {
-            log.error("Cash payment processing failed with unexpected error", ex);
+            log.error("Cash payment processing failed with unexpected error for customerId={}, amount={}",
+                    request != null ? request.getCustomerId() : null,
+                    request != null ? request.getAmount() : null,
+                    ex);
             throw ex;
         }
     }

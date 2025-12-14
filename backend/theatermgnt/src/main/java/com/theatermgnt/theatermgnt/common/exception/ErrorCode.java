@@ -112,6 +112,8 @@ public enum ErrorCode {
     INVALID_BANK_DETAILS(2115, "Bank transfer details are required for bank transfer payment", HttpStatus.BAD_REQUEST),
     INSUFFICIENT_PAYMENT_AMOUNT(
             2116, "Payment amount is insufficient. Required: {required}, Provided: {provided}", HttpStatus.BAD_REQUEST),
+    ORIGINAL_PRICE_REQUIRED(2117, "Original price is required", HttpStatus.BAD_REQUEST),
+    CUSTOMER_ID_REQUIRED(2118, "Customer ID is required", HttpStatus.BAD_REQUEST),
     ;
     private int code;
     private String message;

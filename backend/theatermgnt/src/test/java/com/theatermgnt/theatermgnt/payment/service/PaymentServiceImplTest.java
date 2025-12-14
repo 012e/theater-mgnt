@@ -65,6 +65,8 @@ class PaymentServiceImplTest {
     void setUp() {
         sampleRequest = new PaymentCreationRequest();
         sampleRequest.setAmount(BigDecimal.valueOf(12.5));
+        sampleRequest.setOriginalPrice(BigDecimal.valueOf(100));
+        sampleRequest.setCustomerId("customer-1");
 
         samplePayment = Payment.builder()
                 .id("p-1")
@@ -191,9 +193,24 @@ class PaymentServiceImplTest {
 
     // --- processCashPayment ---
 
-    // TC-01 / TC-02: Happy path cash payment (amount > 0, discount validation may or may not be called)
+    // TC-01: Cash payment with both originalPrice and customerId null must fail
+    @Test
+    void processCashPayment_whenOriginalPriceAndCustomerIdNull_thenThrows() {
+        // Given: default sampleRequest has amount > 0 but no originalPrice and no customerId
+        sampleRequest.setOriginalPrice(null);
+        sampleRequest.setCustomerId(null);
+
+        // When & Then: business rule requires both fields; expect AppException
+        assertThatThrownBy(() -> service.processCashPayment(sampleRequest))
+                .isInstanceOf(AppException.class);
+    }
+
+    // TC-02: Happy path cash payment (amount > 0, discount validation succeeds)
     @Test
     void processCashPayment_happyPath_setsCashAndCompleted() {
+        sampleRequest.setOriginalPrice(BigDecimal.valueOf(100));
+        sampleRequest.setCustomerId("customer-1");
+
         when(paymentMapper.toPayment(sampleRequest)).thenReturn(samplePayment);
         when(paymentRepository.save(any(Payment.class))).thenAnswer(inv -> inv.getArgument(0));
         when(paymentMapper.toPaymentResponse(any(Payment.class))).thenReturn(sampleResponse);
@@ -237,7 +254,7 @@ class PaymentServiceImplTest {
                         sampleRequest.getOriginalPrice(), sampleRequest.getAmount(), sampleRequest.getCustomerId());
     }
 
-    // TC-04 / TC-05: Cash payment with insufficient amount after discount
+    // TC-04: Cash payment with insufficient amount after discount
     @Test
     void processCashPayment_whenAmountInsufficient_thenThrows() {
         // Given: Payment with insufficient amount
@@ -259,52 +276,72 @@ class PaymentServiceImplTest {
                         sampleRequest.getOriginalPrice(), sampleRequest.getAmount(), sampleRequest.getCustomerId());
     }
 
-    // TC-07: Cash payment where originalPrice is null (skip discount validation)
+    // TC-05: Cash payment where originalPrice is null must fail
     @Test
-    void processCashPayment_whenOriginalPriceNull_skipsValidation() {
-        // Given: Payment without originalPrice (no discount validation needed)
+    void processCashPayment_whenOriginalPriceNull_thenThrows() {
         sampleRequest.setOriginalPrice(null);
         sampleRequest.setCustomerId("customer-1");
 
-        when(paymentMapper.toPayment(sampleRequest)).thenReturn(samplePayment);
-        when(paymentRepository.save(any(Payment.class))).thenAnswer(inv -> inv.getArgument(0));
-        when(paymentMapper.toPaymentResponse(any(Payment.class))).thenReturn(sampleResponse);
-
-        // When: Process payment
-        PaymentResponse resp = service.processCashPayment(sampleRequest);
-
-        // Then: Should succeed without calling calculateService
-        assertThat(resp).isNotNull();
-        verify(calculateService, org.mockito.Mockito.never()).validatePaymentAmountSufficient(any(), any(), any());
+        assertThatThrownBy(() -> service.processCashPayment(sampleRequest))
+                .isInstanceOf(AppException.class);
     }
 
-    // TC-08: Cash payment where customerId is null (skip discount validation)
+    // TC-06: Cash payment where customerId is null must fail
     @Test
-    void processCashPayment_whenCustomerIdNull_skipsValidation() {
-        // Given: Payment without customerId (no discount validation needed)
+    void processCashPayment_whenCustomerIdNull_thenThrows() {
         sampleRequest.setOriginalPrice(BigDecimal.valueOf(100));
         sampleRequest.setCustomerId(null);
 
-        when(paymentMapper.toPayment(sampleRequest)).thenReturn(samplePayment);
-        when(paymentRepository.save(any(Payment.class))).thenAnswer(inv -> inv.getArgument(0));
-        when(paymentMapper.toPaymentResponse(any(Payment.class))).thenReturn(sampleResponse);
-
-        // When: Process payment
-        PaymentResponse resp = service.processCashPayment(sampleRequest);
-
-        // Then: Should succeed without calling calculateService
-        assertThat(resp).isNotNull();
-        verify(calculateService, org.mockito.Mockito.never()).validatePaymentAmountSufficient(any(), any(), any());
+        assertThatThrownBy(() -> service.processCashPayment(sampleRequest))
+                .isInstanceOf(AppException.class);
     }
 
     // --- processCreditCardPayment ---
 
+    // CC-TC-01
+    @Test
+    void processCreditCardPayment_whenRequestNull_thenThrows() {
+        CardDetails card = new CardDetails("4111111111111111", "John Doe", "12/30", "123");
+        assertThatThrownBy(() -> service.processCreditCardPayment(null, card))
+                .isInstanceOf(AppException.class);
+    }
+
+    // CC-TC-02
+    @Test
+    void processCreditCardPayment_whenRequestInvalid_thenThrows() {
+        // Any invalid request should throw - testing one example covers the validation logic
+        sampleRequest.setAmount(BigDecimal.ZERO);
+        CardDetails card = new CardDetails("4111111111111111", "John Doe", "12/30", "123");
+        assertThatThrownBy(() -> service.processCreditCardPayment(sampleRequest, card))
+                .isInstanceOf(AppException.class);
+    }
+
+    // CC-TC-03
+    @Test
+    void processCreditCardPayment_whenOriginalPriceNull_thenThrows() {
+        sampleRequest.setOriginalPrice(null);
+        CardDetails card = new CardDetails("4111111111111111", "John Doe", "12/30", "123");
+        assertThatThrownBy(() -> service.processCreditCardPayment(sampleRequest, card))
+                .isInstanceOf(AppException.class);
+    }
+
+    // CC-TC-04
+    @Test
+    void processCreditCardPayment_whenCustomerIdNull_thenThrows() {
+        sampleRequest.setCustomerId(null);
+        CardDetails card = new CardDetails("4111111111111111", "John Doe", "12/30", "123");
+        assertThatThrownBy(() -> service.processCreditCardPayment(sampleRequest, card))
+                .isInstanceOf(AppException.class);
+    }
+
+    // CC-TC-05
     @Test
     void processCreditCardPayment_whenCardDetailsNull_thenThrows() {
         assertThatThrownBy(() -> service.processCreditCardPayment(sampleRequest, null))
                 .isInstanceOf(AppException.class);
     }
 
+    // CC-TC-06
     @Test
     void processCreditCardPayment_whenCardDetailsInvalid_thenThrows() {
         // Any invalid card should throw - testing one example covers the validation logic
@@ -313,6 +350,7 @@ class PaymentServiceImplTest {
                 .isInstanceOf(AppException.class);
     }
 
+    // CC-TC-07
     @Test
     void processCreditCardPayment_happyPath_setsCreditCardAndCompleted() {
         CardDetails card = new CardDetails("4111111111111111", "John Doe", "12/30", "123");
@@ -393,20 +431,4 @@ class PaymentServiceImplTest {
         assertThat(saved.getStatus()).isEqualTo(PaymentStatus.PENDING);
     }
 
-    // --- validateCommon tests ---
-
-    @Test
-    void processCreditCardPayment_whenRequestNull_thenThrows() {
-        CardDetails card = new CardDetails("4111111111111111", "John Doe", "12/30", "123");
-        assertThatThrownBy(() -> service.processCreditCardPayment(null, card)).isInstanceOf(AppException.class);
-    }
-
-    @Test
-    void processCreditCardPayment_whenRequestInvalid_thenThrows() {
-        // Any invalid request should throw - testing one example covers the validation logic
-        sampleRequest.setAmount(BigDecimal.ZERO);
-        CardDetails card = new CardDetails("4111111111111111", "John Doe", "12/30", "123");
-        assertThatThrownBy(() -> service.processCreditCardPayment(sampleRequest, card))
-                .isInstanceOf(AppException.class);
-    }
 }
