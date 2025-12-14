@@ -1,22 +1,22 @@
 package com.theatermgnt.theatermgnt.authorization.service;
 
-import com.theatermgnt.theatermgnt.authorization.dto.request.PermissionRequest;
-import com.theatermgnt.theatermgnt.authorization.dto.response.PermissionResponse;
-import com.theatermgnt.theatermgnt.authorization.entity.Permission;
-import com.theatermgnt.theatermgnt.authorization.mapper.PermissionMapper;
-import com.theatermgnt.theatermgnt.authorization.repository.PermissionRepository;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.core.parameters.P;
 
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import com.theatermgnt.theatermgnt.authorization.dto.request.PermissionRequest;
+import com.theatermgnt.theatermgnt.authorization.dto.response.PermissionResponse;
+import com.theatermgnt.theatermgnt.authorization.entity.Permission;
+import com.theatermgnt.theatermgnt.authorization.mapper.PermissionMapper;
+import com.theatermgnt.theatermgnt.authorization.repository.PermissionRepository;
 
 @ExtendWith(MockitoExtension.class)
 public class PermissionServiceImplTest {
@@ -40,7 +40,7 @@ public class PermissionServiceImplTest {
         when(permissionRepository.save(permission)).thenReturn(savedPermission);
         when(permissionMapper.toPermissionResponse(savedPermission)).thenReturn(response);
 
-        PermissionResponse result =  permissionService.create(request);
+        PermissionResponse result = permissionService.create(request);
 
         assertNotNull(result);
         assertEquals(response, result);
@@ -52,13 +52,13 @@ public class PermissionServiceImplTest {
 
     @Test
     void getAll_success() {
-        Permission p1 =  new Permission();
-        Permission p2 =  new Permission();
+        Permission p1 = new Permission();
+        Permission p2 = new Permission();
 
-        PermissionResponse r1 =  new PermissionResponse();
+        PermissionResponse r1 = new PermissionResponse();
         PermissionResponse r2 = new PermissionResponse();
 
-        when(permissionRepository.findAll()).thenReturn(List.of(p1,p2));
+        when(permissionRepository.findAll()).thenReturn(List.of(p1, p2));
         when(permissionMapper.toPermissionResponse(p1)).thenReturn(r1);
         when(permissionMapper.toPermissionResponse(p2)).thenReturn(r2);
 

@@ -1,6 +1,5 @@
 package com.theatermgnt.theatermgnt.screening.repository;
 
-import com.theatermgnt.theatermgnt.room.entity.Room;
 import com.theatermgnt.theatermgnt.screening.entity.Screening;
 import com.theatermgnt.theatermgnt.screening.enums.ScreeningStatus;
 import org.springframework.data.jpa.repository.JpaRepository;

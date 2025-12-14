@@ -1,9 +1,6 @@
 package com.theatermgnt.theatermgnt.screeningSeat.controller;
 
 import com.theatermgnt.theatermgnt.common.dto.response.ApiResponse;
-import com.theatermgnt.theatermgnt.screening.dto.request.ScreeningCreationRequest;
-import com.theatermgnt.theatermgnt.screening.dto.request.ScreeningUpdateRequest;
-import com.theatermgnt.theatermgnt.screening.dto.response.ScreeningResponse;
 import com.theatermgnt.theatermgnt.screeningSeat.dto.request.ScreeningSeatCreationRequest;
 import com.theatermgnt.theatermgnt.screeningSeat.dto.request.ScreeningSeatUpdateRequest;
 import com.theatermgnt.theatermgnt.screeningSeat.dto.response.ScreeningSeatResponse;

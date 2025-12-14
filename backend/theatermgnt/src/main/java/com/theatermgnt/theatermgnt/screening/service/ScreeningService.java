@@ -1,6 +1,5 @@
 package com.theatermgnt.theatermgnt.screening.service;
 
-import com.theatermgnt.theatermgnt.cinema.repository.CinemaRepository;
 import com.theatermgnt.theatermgnt.common.exception.AppException;
 import com.theatermgnt.theatermgnt.common.exception.ErrorCode;
 import com.theatermgnt.theatermgnt.movie.entity.Movie;
@@ -14,11 +13,7 @@ import com.theatermgnt.theatermgnt.screening.entity.Screening;
 import com.theatermgnt.theatermgnt.screening.enums.ScreeningStatus;
 import com.theatermgnt.theatermgnt.screening.mapper.ScreeningMapper;
 import com.theatermgnt.theatermgnt.screening.repository.ScreeningRepository;
-import com.theatermgnt.theatermgnt.screening.mapper.ScreeningMapper;
-import com.theatermgnt.theatermgnt.screening.repository.ScreeningRepository;
 import com.theatermgnt.theatermgnt.screeningSeat.dto.request.ScreeningSeatCreationRequest;
-import com.theatermgnt.theatermgnt.screeningSeat.entity.ScreeningSeat;
-import com.theatermgnt.theatermgnt.screeningSeat.enums.ScreeningSeatStatus;
 import com.theatermgnt.theatermgnt.screeningSeat.repository.ScreeningSeatRepository;
 import com.theatermgnt.theatermgnt.screeningSeat.service.ScreeningSeatService;
 import com.theatermgnt.theatermgnt.seat.entity.Seat;
@@ -31,7 +26,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 

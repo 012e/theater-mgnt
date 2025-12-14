@@ -1,10 +1,6 @@
 package com.theatermgnt.theatermgnt.screeningSeat.mapper;
 
 
-import com.theatermgnt.theatermgnt.screening.dto.request.ScreeningCreationRequest;
-import com.theatermgnt.theatermgnt.screening.dto.request.ScreeningUpdateRequest;
-import com.theatermgnt.theatermgnt.screening.dto.response.ScreeningResponse;
-import com.theatermgnt.theatermgnt.screening.entity.Screening;
 import com.theatermgnt.theatermgnt.screeningSeat.dto.request.ScreeningSeatCreationRequest;
 import com.theatermgnt.theatermgnt.screeningSeat.dto.request.ScreeningSeatUpdateRequest;
 import com.theatermgnt.theatermgnt.screeningSeat.dto.response.ScreeningSeatResponse;

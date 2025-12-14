@@ -1,6 +1,5 @@
 package com.theatermgnt.theatermgnt.screening.dto.response;
 
-import com.theatermgnt.theatermgnt.common.enums.RoomType;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 

@@ -2,10 +2,6 @@ package com.theatermgnt.theatermgnt.screeningSeat.service;
 
 import com.theatermgnt.theatermgnt.common.exception.AppException;
 import com.theatermgnt.theatermgnt.common.exception.ErrorCode;
-import com.theatermgnt.theatermgnt.movie.entity.Movie;
-import com.theatermgnt.theatermgnt.movie.repository.MovieRepository;
-import com.theatermgnt.theatermgnt.room.entity.Room;
-import com.theatermgnt.theatermgnt.room.repository.RoomRepository;
 import com.theatermgnt.theatermgnt.screening.entity.Screening;
 import com.theatermgnt.theatermgnt.screening.repository.ScreeningRepository;
 import com.theatermgnt.theatermgnt.screeningSeat.dto.request.ScreeningSeatCreationRequest;

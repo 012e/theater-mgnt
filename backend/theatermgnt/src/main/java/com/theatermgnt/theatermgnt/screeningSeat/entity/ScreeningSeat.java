@@ -1,10 +1,7 @@
 package com.theatermgnt.theatermgnt.screeningSeat.entity;
 
 import com.theatermgnt.theatermgnt.common.entity.BaseEntity;
-import com.theatermgnt.theatermgnt.movie.entity.Movie;
-import com.theatermgnt.theatermgnt.room.entity.Room;
 import com.theatermgnt.theatermgnt.screening.entity.Screening;
-import com.theatermgnt.theatermgnt.screening.enums.ScreeningStatus;
 import com.theatermgnt.theatermgnt.screeningSeat.enums.ScreeningSeatStatus;
 import com.theatermgnt.theatermgnt.seat.entity.Seat;
 import jakarta.persistence.*;
@@ -12,8 +9,6 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
-
-import java.time.LocalDateTime;
 
 @Setter
 @Getter

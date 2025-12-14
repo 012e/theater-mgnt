@@ -1,14 +1,11 @@
 package com.theatermgnt.theatermgnt.screeningSeat.repository;
 
-import com.theatermgnt.theatermgnt.screening.entity.Screening;
-import com.theatermgnt.theatermgnt.screening.enums.ScreeningStatus;
 import com.theatermgnt.theatermgnt.screeningSeat.entity.ScreeningSeat;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 public interface ScreeningSeatRepository extends JpaRepository<ScreeningSeat,String> {
