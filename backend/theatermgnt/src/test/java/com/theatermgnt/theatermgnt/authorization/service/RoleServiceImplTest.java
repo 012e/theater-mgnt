@@ -13,7 +13,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import javax.management.relation.RoleResult;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -85,5 +87,42 @@ public class RoleServiceImplTest {
         verify(roleRepository).findAll();
         verify(roleMapper, times(2)).toRoleResponse(any(Role.class));
     }
+
+    @Test
+    void updateRole_success()
+    {
+        //arrange
+        String roleId = "ROLE_1";
+
+        RoleRequest request = new RoleRequest();
+        request.setPermissions(Set.of("ROLE_1"));
+
+        Role existingRole = new Role();
+        Role savedRole = new Role();
+        RoleResponse response = new RoleResponse();
+
+        when(roleRepository.findById(roleId))
+                .thenReturn(Optional.of(existingRole));
+
+        when(permissionRepository.findAllById(request.getPermissions()))
+                .thenReturn(List.of(new Permission()));
+
+        when(roleRepository.save(existingRole)).thenReturn(savedRole);
+        when(roleMapper.toRoleResponse(savedRole)).thenReturn(response);
+
+        //act
+        RoleResponse result = roleService.update(roleId, request);
+
+        //assert
+        assertNotNull(result);
+
+        verify(roleRepository).findById(roleId);
+        verify(permissionRepository).findAllById(request.getPermissions());
+        verify(roleMapper).toRoleResponse(savedRole);
+        verify(roleRepository).save(existingRole);
+        verify(roleMapper).updateRole(request, existingRole);
+    }
+
+
 }
 
