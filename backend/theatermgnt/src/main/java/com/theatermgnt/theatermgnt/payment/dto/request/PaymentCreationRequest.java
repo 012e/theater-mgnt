@@ -17,10 +17,5 @@ public class PaymentCreationRequest {
     @NotNull(message = "INVALID_PAYMENT_AMOUNT")
     BigDecimal amount;
 
-    @NotBlank(message = "INVALID_PAYMENT_CURRENCY")
-    String currency;
-
     String customerId;
-
-    String transactionId;
 }

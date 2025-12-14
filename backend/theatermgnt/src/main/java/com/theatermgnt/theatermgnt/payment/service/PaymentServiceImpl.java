@@ -5,17 +5,17 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.theatermgnt.theatermgnt.common.exception.AppException;
-import com.theatermgnt.theatermgnt.common.exception.ErrorCode;
-import com.theatermgnt.theatermgnt.payment.dto.request.BankTransferDetails;
-import com.theatermgnt.theatermgnt.payment.dto.request.CardDetails;
-import com.theatermgnt.theatermgnt.payment.dto.request.EwalletDetails;
 import com.theatermgnt.theatermgnt.payment.dto.request.PaymentCreationRequest;
 import com.theatermgnt.theatermgnt.payment.dto.request.PaymentUpdateRequest;
+import com.theatermgnt.theatermgnt.payment.dto.request.CardDetails;
+import com.theatermgnt.theatermgnt.payment.dto.request.EwalletDetails;
+import com.theatermgnt.theatermgnt.payment.dto.request.BankTransferDetails;
 import com.theatermgnt.theatermgnt.payment.dto.response.PaymentResponse;
 import com.theatermgnt.theatermgnt.payment.entity.Payment;
 import com.theatermgnt.theatermgnt.payment.mapper.PaymentMapper;
 import com.theatermgnt.theatermgnt.payment.repository.PaymentRepository;
+import com.theatermgnt.theatermgnt.common.exception.AppException;
+import com.theatermgnt.theatermgnt.common.exception.ErrorCode;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -34,10 +34,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public PaymentResponse createPayment(PaymentCreationRequest request) {
-        if (request.getTransactionId() != null && paymentRepository.existsByTransactionId(request.getTransactionId())) {
-            throw new AppException(ErrorCode.valueOf("CINEMA_EXISTED"));
-        }
-
+        validateCommon(request);
         Payment payment = paymentMapper.toPayment(request);
         payment.setStatus(com.theatermgnt.theatermgnt.payment.enums.PaymentStatus.PENDING);
         payment.setCreatedAt(LocalDateTime.now());
@@ -47,15 +44,12 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public List<PaymentResponse> getPayments() {
-        return paymentRepository.findAll().stream()
-                .map(paymentMapper::toPaymentResponse)
-                .toList();
+        return paymentRepository.findAll().stream().map(paymentMapper::toPaymentResponse).toList();
     }
 
     @Override
     public PaymentResponse getPayment(String paymentId) {
-        return paymentMapper.toPaymentResponse(paymentRepository
-                .findById(paymentId)
+        return paymentMapper.toPaymentResponse(paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new AppException(ErrorCode.valueOf("CINEMA_NOT_EXISTED"))));
     }
 
@@ -66,8 +60,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public PaymentResponse updatePayment(String paymentId, PaymentUpdateRequest request) {
-        Payment payment = paymentRepository
-                .findById(paymentId)
+        Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new AppException(ErrorCode.valueOf("CINEMA_NOT_EXISTED")));
 
         paymentMapper.updatePayment(payment, request);
@@ -140,11 +133,12 @@ public class PaymentServiceImpl implements PaymentService {
 
     // Common validations
     private void validateCommon(PaymentCreationRequest request) {
-        if (request.getTransactionId() != null && paymentRepository.existsByTransactionId(request.getTransactionId())) {
-            throw new AppException(ErrorCode.valueOf("CINEMA_EXISTED"));
+        if (request == null) {
+            throw new AppException(ErrorCode.valueOf("INVALID_REQUEST"));
         }
         if (request.getAmount() == null || request.getAmount().doubleValue() <= 0) {
             throw new AppException(ErrorCode.valueOf("INVALID_PAYMENT_AMOUNT"));
         }
     }
+
 }

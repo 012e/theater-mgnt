@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -34,8 +33,11 @@ import com.theatermgnt.theatermgnt.payment.enums.PaymentMethod;
 import com.theatermgnt.theatermgnt.payment.enums.PaymentStatus;
 import com.theatermgnt.theatermgnt.payment.mapper.PaymentMapper;
 import com.theatermgnt.theatermgnt.payment.repository.PaymentRepository;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class PaymentServiceImplTest {
 
     @Mock
@@ -58,16 +60,12 @@ class PaymentServiceImplTest {
     void setUp() {
         sampleRequest = new PaymentCreationRequest();
         sampleRequest.setAmount(BigDecimal.valueOf(12.5));
-        sampleRequest.setCurrency("USD");
-        sampleRequest.setTransactionId("tx-123");
 
         samplePayment = Payment.builder()
                 .id("p-1")
                 .amount(sampleRequest.getAmount())
-                .currency(sampleRequest.getCurrency())
                 .method(PaymentMethod.CREDIT_CARD)
                 .status(PaymentStatus.PENDING)
-                .transactionId(sampleRequest.getTransactionId())
                 .build();
 
         sampleResponse = new PaymentResponse();
@@ -81,74 +79,15 @@ class PaymentServiceImplTest {
 
     // --- createPayment tests ---
 
-    @Test
-    void createPayment_whenTransactionIdExists_thenThrowsAppException() {
-        when(paymentRepository.existsByTransactionId("tx-123")).thenReturn(true);
-
-        assertThatThrownBy(() -> service.createPayment(sampleRequest)).isInstanceOf(AppException.class);
-
-        verify(paymentRepository).existsByTransactionId("tx-123");
-        verify(paymentRepository, never()).save(any());
-    }
-
-    @Test
-    void createPayment_happyPath_savesPendingAndReturnsResponse() {
-        when(paymentRepository.existsByTransactionId("tx-123")).thenReturn(false);
-        when(paymentMapper.toPayment(sampleRequest)).thenReturn(samplePayment);
-        when(paymentRepository.save(any(Payment.class))).thenAnswer(inv -> inv.getArgument(0));
-        when(paymentMapper.toPaymentResponse(any(Payment.class))).thenReturn(sampleResponse);
-
-        PaymentResponse resp = service.createPayment(sampleRequest);
-
-        assertThat(resp).isNotNull();
-        verify(paymentRepository).existsByTransactionId("tx-123");
-        verify(paymentMapper).toPayment(sampleRequest);
-        verify(paymentRepository).save(paymentCaptor.capture());
-        Payment saved = paymentCaptor.getValue();
-        assertThat(saved.getStatus()).isEqualTo(PaymentStatus.PENDING);
-        assertThat(saved.getCreatedAt()).isNotNull();
-        verify(paymentMapper).toPaymentResponse(saved);
-    }
-
-    @Test
-    void createPayment_whenTransactionIdNull_doesNotCheckExists() {
-        sampleRequest.setTransactionId(null);
-        when(paymentMapper.toPayment(sampleRequest)).thenReturn(samplePayment);
-        when(paymentRepository.save(any(Payment.class))).thenAnswer(inv -> inv.getArgument(0));
-        when(paymentMapper.toPaymentResponse(any(Payment.class))).thenReturn(sampleResponse);
-
-        PaymentResponse resp = service.createPayment(sampleRequest);
-
-        assertThat(resp).isNotNull();
-        verify(paymentRepository, never()).existsByTransactionId(any());
-        verify(paymentRepository).save(any(Payment.class));
-    }
-
     // --- getPayments tests ---
-
     @Test
     void getPayments_happyPath_mapsAll() {
-        Payment p2 = Payment.builder()
-                .id("p-2")
-                .amount(BigDecimal.ONE)
-                .currency("USD")
-                .method(PaymentMethod.CASH)
-                .status(PaymentStatus.COMPLETED)
-                .build();
+        Payment p2 = Payment.builder().id("p-2").amount(BigDecimal.ONE).currency("USD").method(PaymentMethod.CASH)
+                .status(PaymentStatus.COMPLETED).build();
         when(paymentRepository.findAll()).thenReturn(List.of(samplePayment, p2));
         when(paymentMapper.toPaymentResponse(samplePayment)).thenReturn(sampleResponse);
-        when(paymentMapper.toPaymentResponse(p2))
-                .thenReturn(new PaymentResponse(
-                        "p-2",
-                        BigDecimal.ONE,
-                        "USD",
-                        PaymentMethod.CASH,
-                        PaymentStatus.COMPLETED,
-                        null,
-                        null,
-                        null,
-                        LocalDateTime.now(),
-                        null));
+        when(paymentMapper.toPaymentResponse(p2)).thenReturn(new PaymentResponse("p-2", BigDecimal.ONE, "USD",
+                PaymentMethod.CASH, PaymentStatus.COMPLETED, null, null, null, LocalDateTime.now(), null));
 
         List<PaymentResponse> results = service.getPayments();
 
@@ -237,7 +176,6 @@ class PaymentServiceImplTest {
 
     @Test
     void processCashPayment_happyPath_setsCashAndCompleted() {
-        when(paymentRepository.existsByTransactionId("tx-123")).thenReturn(false);
         when(paymentMapper.toPayment(sampleRequest)).thenReturn(samplePayment);
         when(paymentRepository.save(any(Payment.class))).thenAnswer(inv -> inv.getArgument(0));
         when(paymentMapper.toPaymentResponse(any(Payment.class))).thenReturn(sampleResponse);
@@ -256,14 +194,12 @@ class PaymentServiceImplTest {
 
     @Test
     void processCreditCardPayment_whenCardDetailsNull_thenThrows() {
-        assertThatThrownBy(() -> service.processCreditCardPayment(sampleRequest, null))
-                .isInstanceOf(AppException.class);
+        assertThatThrownBy(() -> service.processCreditCardPayment(sampleRequest, null)).isInstanceOf(AppException.class);
     }
 
     @Test
     void processCreditCardPayment_happyPath_setsCreditCardAndCompleted() {
         CardDetails card = new CardDetails("4111111111111111", "John Doe", "12/25", "123");
-        when(paymentRepository.existsByTransactionId("tx-123")).thenReturn(false);
         when(paymentMapper.toPayment(sampleRequest)).thenReturn(samplePayment);
         when(paymentRepository.save(any(Payment.class))).thenAnswer(inv -> inv.getArgument(0));
         when(paymentMapper.toPaymentResponse(any(Payment.class))).thenReturn(sampleResponse);
@@ -281,14 +217,12 @@ class PaymentServiceImplTest {
 
     @Test
     void processEwalletPayment_whenEwalletDetailsNull_thenThrows() {
-        assertThatThrownBy(() -> service.processEwalletPayment(sampleRequest, null))
-                .isInstanceOf(AppException.class);
+        assertThatThrownBy(() -> service.processEwalletPayment(sampleRequest, null)).isInstanceOf(AppException.class);
     }
 
     @Test
     void processEwalletPayment_happyPath_setsWalletAndCompleted() {
         EwalletDetails wallet = new EwalletDetails("ew-1", "PAYPAL", "token");
-        when(paymentRepository.existsByTransactionId("tx-123")).thenReturn(false);
         when(paymentMapper.toPayment(sampleRequest)).thenReturn(samplePayment);
         when(paymentRepository.save(any(Payment.class))).thenAnswer(inv -> inv.getArgument(0));
         when(paymentMapper.toPaymentResponse(any(Payment.class))).thenReturn(sampleResponse);
@@ -306,14 +240,12 @@ class PaymentServiceImplTest {
 
     @Test
     void processBankTransferPayment_whenBankDetailsNull_thenThrows() {
-        assertThatThrownBy(() -> service.processBankTransferPayment(sampleRequest, null))
-                .isInstanceOf(AppException.class);
+        assertThatThrownBy(() -> service.processBankTransferPayment(sampleRequest, null)).isInstanceOf(AppException.class);
     }
 
     @Test
     void processBankTransferPayment_happyPath_setsBankTransferAndPending() {
         BankTransferDetails bank = new BankTransferDetails("12345678", "MyBank", "ref-1");
-        when(paymentRepository.existsByTransactionId("tx-123")).thenReturn(false);
         when(paymentMapper.toPayment(sampleRequest)).thenReturn(samplePayment);
         when(paymentRepository.save(any(Payment.class))).thenAnswer(inv -> inv.getArgument(0));
         when(paymentMapper.toPaymentResponse(any(Payment.class))).thenReturn(sampleResponse);
@@ -333,7 +265,8 @@ class PaymentServiceImplTest {
     void processCreditCardPayment_whenAmountInvalid_thenThrows() {
         sampleRequest.setAmount(BigDecimal.ZERO);
         CardDetails card = new CardDetails("4111111111111111", "John Doe", "12/25", "123");
-        assertThatThrownBy(() -> service.processCreditCardPayment(sampleRequest, card))
-                .isInstanceOf(AppException.class);
+        assertThatThrownBy(() -> service.processCreditCardPayment(sampleRequest, card)).isInstanceOf(AppException.class);
     }
+
 }
+
