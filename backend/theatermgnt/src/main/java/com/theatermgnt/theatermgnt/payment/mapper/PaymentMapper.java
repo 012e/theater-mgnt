@@ -16,4 +16,3 @@ public interface PaymentMapper {
 
     void updatePayment(@MappingTarget Payment payment, PaymentUpdateRequest request);
 }
-

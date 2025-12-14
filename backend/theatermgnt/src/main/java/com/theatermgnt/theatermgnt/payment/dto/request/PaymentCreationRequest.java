@@ -5,8 +5,6 @@ import java.math.BigDecimal;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-import com.theatermgnt.theatermgnt.payment.enums.PaymentMethod;
-
 import lombok.*;
 
 @Data

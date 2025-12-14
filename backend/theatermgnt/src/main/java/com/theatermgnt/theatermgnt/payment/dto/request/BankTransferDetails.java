@@ -16,4 +16,3 @@ public class BankTransferDetails {
 
     String reference;
 }
-

@@ -14,7 +14,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import com.theatermgnt.theatermgnt.authorization.cinema.service.CinemaServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -27,6 +26,7 @@ import com.theatermgnt.theatermgnt.authorization.cinema.dto.response.CinemaRespo
 import com.theatermgnt.theatermgnt.authorization.cinema.entity.Cinema;
 import com.theatermgnt.theatermgnt.authorization.cinema.mapper.CinemaMapper;
 import com.theatermgnt.theatermgnt.authorization.cinema.repository.CinemaRepository;
+import com.theatermgnt.theatermgnt.authorization.cinema.service.CinemaServiceImpl;
 import com.theatermgnt.theatermgnt.common.exception.AppException;
 import com.theatermgnt.theatermgnt.common.exception.ErrorCode;
 

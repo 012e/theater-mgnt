@@ -8,6 +8,6 @@ import com.theatermgnt.theatermgnt.payment.entity.Payment;
 
 public interface PaymentRepository extends JpaRepository<Payment, String> {
     boolean existsByTransactionId(String transactionId);
+
     Optional<Payment> findByBookingId(String bookingId);
 }
-

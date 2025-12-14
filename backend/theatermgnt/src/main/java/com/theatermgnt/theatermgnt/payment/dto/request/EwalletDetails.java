@@ -15,4 +15,3 @@ public class EwalletDetails {
 
     String authToken;
 }
-

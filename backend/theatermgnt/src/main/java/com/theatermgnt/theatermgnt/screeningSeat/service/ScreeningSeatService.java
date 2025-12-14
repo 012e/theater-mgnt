@@ -1,12 +1,13 @@
 package com.theatermgnt.theatermgnt.screeningSeat.service;
 
-import com.theatermgnt.theatermgnt.screeningSeat.dto.request.ScreeningSeatCreationRequest;
-import com.theatermgnt.theatermgnt.screeningSeat.dto.request.ScreeningSeatUpdateRequest;
-import com.theatermgnt.theatermgnt.screeningSeat.dto.response.ScreeningSeatResponse;
+import java.util.List;
+
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import com.theatermgnt.theatermgnt.screeningSeat.dto.request.ScreeningSeatCreationRequest;
+import com.theatermgnt.theatermgnt.screeningSeat.dto.request.ScreeningSeatUpdateRequest;
+import com.theatermgnt.theatermgnt.screeningSeat.dto.response.ScreeningSeatResponse;
 
 public interface ScreeningSeatService {
     @Transactional(propagation = Propagation.REQUIRED)

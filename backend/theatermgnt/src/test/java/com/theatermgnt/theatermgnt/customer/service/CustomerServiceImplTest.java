@@ -99,4 +99,37 @@ public class CustomerServiceImplTest {
         verify(accountRepository).findByUsername("customer01");
         verify(customerRepository).existsByAccountId(account.getId());
     }
+
+    // TC-05 — A: account not found: ACCOUNT_NOT_FOUND
+    @Test
+    void isCustomer_whenAccountNotFound_byUsername_thenThrowAccountNotFound() {
+
+        String username = "notUser01";
+        when(accountRepository.findByUsername(username)).thenReturn(Optional.empty());
+
+        AppException ex = assertThrows(AppException.class, () -> customerService.isCustomer(username));
+
+        assertEquals(ErrorCode.ACCOUNT_NOT_FOUND, ex.getErrorCode());
+
+        verify(accountRepository).findByUsername(username);
+        verifyNoInteractions(customerRepository);
+    }
+
+    // TC-06 — N: account: customer exist → return true
+    @Test
+    void isCustomer_whenEmailExistsAndIsCustomer_thenReturnTrue() {
+
+        String email = "customer02@gmail.com";
+        Account account = sampleAccount("acc-3", "customer02");
+
+        when(accountRepository.findByEmail(email)).thenReturn(Optional.of(account));
+        when(customerRepository.existsByAccountId(account.getId())).thenReturn(true);
+
+        boolean result = customerService.isCustomer(email);
+
+        assertTrue(result);
+
+        verify(accountRepository).findByEmail(email);
+        verify(customerRepository).existsByAccountId(account.getId());
+    }
 }

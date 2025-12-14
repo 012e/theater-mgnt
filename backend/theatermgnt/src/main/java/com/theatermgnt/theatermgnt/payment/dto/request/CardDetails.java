@@ -25,4 +25,3 @@ public class CardDetails {
     @Size(min = 3, max = 4)
     String cvv;
 }
-

@@ -1,8 +1,9 @@
 package com.theatermgnt.theatermgnt.payment.dto.request;
 
+import jakarta.validation.constraints.NotNull;
+
 import com.theatermgnt.theatermgnt.payment.enums.PaymentStatus;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 @Data
@@ -14,4 +15,3 @@ public class PaymentUpdateRequest {
 
     String transactionId;
 }
-
