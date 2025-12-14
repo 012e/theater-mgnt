@@ -7,6 +7,8 @@ import com.theatermgnt.theatermgnt.authorization.entity.Role;
 import com.theatermgnt.theatermgnt.authorization.mapper.RoleMapper;
 import com.theatermgnt.theatermgnt.authorization.repository.PermissionRepository;
 import com.theatermgnt.theatermgnt.authorization.repository.RoleRepository;
+import com.theatermgnt.theatermgnt.common.exception.AppException;
+import com.theatermgnt.theatermgnt.common.exception.ErrorCode;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -18,8 +20,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -121,6 +122,25 @@ public class RoleServiceImplTest {
         verify(roleMapper).toRoleResponse(savedRole);
         verify(roleRepository).save(existingRole);
         verify(roleMapper).updateRole(request, existingRole);
+    }
+
+    @Test
+    void updateRole_roleNotFound(){
+        //arrange
+        String roleId = "NOT_EXIST";
+
+        RoleRequest request = new RoleRequest();
+
+        when(roleRepository.findById(roleId))
+                .thenReturn(Optional.empty());
+
+        //act + assert
+        AppException exception
+                = assertThrows(AppException.class, ()->roleService.update(roleId, request));
+
+        assertEquals(ErrorCode.ROLE_NOT_FOUND, exception.getErrorCode());
+        verify(roleRepository).findById(roleId);
+        verifyNoMoreInteractions(roleRepository, permissionRepository, roleMapper);
     }
 
 
