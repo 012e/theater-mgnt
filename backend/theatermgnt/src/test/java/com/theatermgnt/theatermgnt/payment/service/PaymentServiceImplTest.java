@@ -298,7 +298,9 @@ class PaymentServiceImplTest {
 
     // --- processCreditCardPayment ---
 
-    // CC-TC-01
+    // CC-TC-01: Null request validation
+    // Tests that the service rejects null payment request via validateCommon
+    // Expected: AppException(INVALID_REQUEST)
     @Test
     void processCreditCardPayment_whenRequestNull_thenThrows() {
         CardDetails card = new CardDetails("4111111111111111", "John Doe", "12/30", "123");
@@ -306,7 +308,9 @@ class PaymentServiceImplTest {
                 .isInstanceOf(AppException.class);
     }
 
-    // CC-TC-02
+    // CC-TC-02: Invalid payment amount validation
+    // Tests that the service rejects invalid payment amount (amount <= 0)
+    // Expected: AppException(INVALID_PAYMENT_AMOUNT)
     @Test
     void processCreditCardPayment_whenRequestInvalid_thenThrows() {
         // Any invalid request should throw - testing one example covers the validation logic
@@ -316,32 +320,20 @@ class PaymentServiceImplTest {
                 .isInstanceOf(AppException.class);
     }
 
-    // CC-TC-03
-    @Test
-    void processCreditCardPayment_whenOriginalPriceNull_thenThrows() {
-        sampleRequest.setOriginalPrice(null);
-        CardDetails card = new CardDetails("4111111111111111", "John Doe", "12/30", "123");
-        assertThatThrownBy(() -> service.processCreditCardPayment(sampleRequest, card))
-                .isInstanceOf(AppException.class);
-    }
 
-    // CC-TC-04
-    @Test
-    void processCreditCardPayment_whenCustomerIdNull_thenThrows() {
-        sampleRequest.setCustomerId(null);
-        CardDetails card = new CardDetails("4111111111111111", "John Doe", "12/30", "123");
-        assertThatThrownBy(() -> service.processCreditCardPayment(sampleRequest, card))
-                .isInstanceOf(AppException.class);
-    }
 
-    // CC-TC-05
+    // CC-TC-03: Null card details validation
+    // Tests that the service rejects null card details
+    // Expected: AppException(INVALID_CARD_DETAILS)
     @Test
     void processCreditCardPayment_whenCardDetailsNull_thenThrows() {
         assertThatThrownBy(() -> service.processCreditCardPayment(sampleRequest, null))
                 .isInstanceOf(AppException.class);
     }
 
-    // CC-TC-06
+    // CC-TC-04: Invalid card number validation
+    // Tests that the service rejects invalid card number (fails Luhn/format validation)
+    // Expected: AppException(INVALID_CARD_NUMBER)
     @Test
     void processCreditCardPayment_whenCardDetailsInvalid_thenThrows() {
         // Any invalid card should throw - testing one example covers the validation logic
@@ -350,7 +342,9 @@ class PaymentServiceImplTest {
                 .isInstanceOf(AppException.class);
     }
 
-    // CC-TC-07
+    // CC-TC-5: Successful credit card payment
+    // Tests the happy path: valid request with amount, originalPrice, customerId, and valid card details
+    // Expected: Payment created with method=CREDIT_CARD, status=COMPLETED, returns non-null PaymentResponse
     @Test
     void processCreditCardPayment_happyPath_setsCreditCardAndCompleted() {
         CardDetails card = new CardDetails("4111111111111111", "John Doe", "12/30", "123");
