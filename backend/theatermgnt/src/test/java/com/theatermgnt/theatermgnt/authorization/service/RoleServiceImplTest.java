@@ -143,6 +143,16 @@ public class RoleServiceImplTest {
         verifyNoMoreInteractions(roleRepository, permissionRepository, roleMapper);
     }
 
+    @Test
+    void deleteRole_success() {
+        // Arrange
+        String roleId = "ROLE_1";
 
+        // Act
+        roleService.delete(roleId);
+
+        // Assert
+        verify(roleRepository).deleteById(roleId);
+    }
 }
 
