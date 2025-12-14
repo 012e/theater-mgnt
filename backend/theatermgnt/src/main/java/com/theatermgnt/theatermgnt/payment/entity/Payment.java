@@ -29,9 +29,6 @@ public class Payment extends BaseEntity {
     @Column(nullable = false, precision = 19, scale = 4)
     BigDecimal amount;
 
-    @Column(nullable = false)
-    String currency;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     PaymentMethod method;

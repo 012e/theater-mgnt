@@ -71,7 +71,6 @@ class PaymentServiceImplTest {
         sampleResponse = new PaymentResponse();
         sampleResponse.setId(samplePayment.getId());
         sampleResponse.setAmount(samplePayment.getAmount());
-        sampleResponse.setCurrency(samplePayment.getCurrency());
         sampleResponse.setMethod(samplePayment.getMethod());
         sampleResponse.setStatus(samplePayment.getStatus());
     }
@@ -84,7 +83,6 @@ class PaymentServiceImplTest {
         Payment p2 = Payment.builder()
                 .id("p-2")
                 .amount(BigDecimal.ONE)
-                .currency("USD")
                 .method(PaymentMethod.CASH)
                 .status(PaymentStatus.COMPLETED)
                 .build();
