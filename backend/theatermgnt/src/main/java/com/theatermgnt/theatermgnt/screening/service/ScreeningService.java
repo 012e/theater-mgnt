@@ -126,25 +126,35 @@ public class ScreeningService {
 //                .map(screeningMapper::toScreeningResponse)
 //                .toList();
 //    }
-public List<ScreeningResponse> getScreenings(LocalDateTime queryDate) {
-    List<Screening> allScreenings = screeningRepo.findAllByDate(queryDate.toLocalDate());
+    public List<ScreeningResponse> getScreenings() {
 
-    // --- BUG LOGIC HERE ---
-    // Developer sai sót: Chỉ lọc những phim có startTime > NOW()
-    // Dẫn đến việc phim 'ongoing' (bắt đầu cách đây 30p) bị loại bỏ.
-    return allScreenings.stream()
-            .filter(s -> s.getStartTime().isAfter(LocalDateTime.now())) // <== LỖI TẠI ĐÂY
-            .filter(s -> !s.getStatus().equals("cancelled"))
-            .map(this::convertToDTO)
-            .collect(Collectors.toList());
-}
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime graceTime = now.minusMinutes(30);
 
-    private ScreeningResponse convertToDTO(Screening s) {
-        // Giả lập logic tính toán ghế
-        int totalSeats = 100;
-        int soldSeats = seatRepository.count(s.getId());
-        return new ScreeningDTO(s.getMovieName(), s.getStartTime(), totalSeats - soldSeats);
+        List<Screening> screenings = screeningRepository.findValidScreenings(
+                List.of(ScreeningStatus.SCHEDULED, ScreeningStatus.ONGOING),
+                graceTime
+        );
+
+        if (screenings.isEmpty()) {
+            log.info("No screening available");
+            return List.of();
+        }
+
+        return screenings.stream()
+                .map(screening -> {
+                    int availableSeats =
+                            screeningSeatRepository.countAvailableSeats(screening.getId());
+
+                    ScreeningResponse response =
+                            screeningMapper.toScreeningResponse(screening);
+
+                    response.setAvailableSeats(availableSeats);
+                    return response;
+                })
+                .toList();
     }
+
 
     public ScreeningResponse getScreening(String screeningId) {
         Screening screening = screeningRepository

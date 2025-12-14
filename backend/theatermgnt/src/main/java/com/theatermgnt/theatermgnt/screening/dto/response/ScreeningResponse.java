@@ -17,4 +17,5 @@ public class ScreeningResponse {
     LocalDateTime startTime;
     LocalDateTime endTime;
     String status;
+     Integer availableSeats;
 }

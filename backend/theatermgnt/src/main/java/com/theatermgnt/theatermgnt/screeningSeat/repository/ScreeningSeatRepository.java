@@ -2,6 +2,7 @@ package com.theatermgnt.theatermgnt.screeningSeat.repository;
 
 import java.util.List;
 
+import feign.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -35,4 +36,11 @@ public interface ScreeningSeatRepository extends JpaRepository<ScreeningSeat, St
 		AND ss.status = 'AVAILABLE'
 	""")
     void lockAvailableSeatsByScreening(String screeningId);
+
+    @Query("""
+        SELECT COUNT(ss) FROM ScreeningSeat ss
+        WHERE ss.screening = :screeningId
+        AND ss.status = 'available'
+    """)
+    int countAvailableSeats(@Param("screeningId") String screeningId);
 }

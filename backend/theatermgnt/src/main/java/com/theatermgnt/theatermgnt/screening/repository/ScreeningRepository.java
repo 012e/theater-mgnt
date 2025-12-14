@@ -3,6 +3,7 @@ package com.theatermgnt.theatermgnt.screening.repository;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import feign.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -32,4 +33,14 @@ public interface ScreeningRepository extends JpaRepository<Screening, String> {
 	AND s.endTime > :startTime
 	""")
     boolean isTimeOverlap(String roomId, LocalDateTime startTime, LocalDateTime endTime, String excludeId);
+
+    @Query("""
+        SELECT s FROM Screening s
+        WHERE s.status IN :statuses
+        AND s.startTime >= :minTime
+    """)
+    List<Screening> findValidScreenings(
+            @Param("statuses") List<ScreeningStatus> statuses,
+            @Param("minTime") LocalDateTime minTime
+    );
 }
