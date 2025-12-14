@@ -16,9 +16,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 import java.util.Set;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class RoleServiceImplTest {
@@ -63,4 +64,26 @@ public class RoleServiceImplTest {
         verify(roleRepository).save(role);
         verify(roleMapper).toRoleResponse(savedRole);
     }
+
+    @Test
+    void getAllRoles_success()
+    {
+        //arrange
+        Role role1 = new Role();
+        Role role2 = new Role();
+
+        when(roleRepository.findAll()).thenReturn(List.of(role1, role2));
+        when(roleMapper.toRoleResponse(any(Role.class)))
+                .thenReturn(new RoleResponse());
+
+        //act
+        List<RoleResponse> result = roleService.getAll();
+
+        //assert
+        assertEquals(2, result.size());
+
+        verify(roleRepository).findAll();
+        verify(roleMapper, times(2)).toRoleResponse(any(Role.class));
+    }
 }
+
