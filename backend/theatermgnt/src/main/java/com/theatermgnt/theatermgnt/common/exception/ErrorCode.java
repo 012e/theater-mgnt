@@ -110,6 +110,7 @@ public enum ErrorCode {
     INVALID_CARD_DETAILS(2113, "Card details are required for credit card payment", HttpStatus.BAD_REQUEST),
     INVALID_EWALLET_DETAILS(2114, "E-wallet details are required for e-wallet payment", HttpStatus.BAD_REQUEST),
     INVALID_BANK_DETAILS(2115, "Bank transfer details are required for bank transfer payment", HttpStatus.BAD_REQUEST),
+    INSUFFICIENT_PAYMENT_AMOUNT(2116, "Payment amount is insufficient. Required: {required}, Provided: {provided}", HttpStatus.BAD_REQUEST),
     ;
     private int code;
     private String message;

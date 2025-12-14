@@ -35,4 +35,28 @@ public class CalculateServiceImpl implements CalculateService {
 
         return discountedPrice.setScale(0, RoundingMode.HALF_UP);
     }
+
+    @Override
+    public boolean isPaymentAmountSufficient(BigDecimal originalPrice, BigDecimal transferredAmount, String usernameOrEmail) {
+        if (transferredAmount == null || transferredAmount.compareTo(BigDecimal.ZERO) <= 0) {
+            return false;
+        }
+
+        BigDecimal requiredAmount = discountPrice(originalPrice, usernameOrEmail);
+
+        return transferredAmount.compareTo(requiredAmount) >= 0;
+    }
+
+    @Override
+    public void validatePaymentAmountSufficient(BigDecimal originalPrice, BigDecimal transferredAmount, String usernameOrEmail) {
+        if (transferredAmount == null || transferredAmount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new AppException(ErrorCode.INVALID_PAYMENT_AMOUNT);
+        }
+
+        BigDecimal requiredAmount = discountPrice(originalPrice, usernameOrEmail);
+
+        if (transferredAmount.compareTo(requiredAmount) < 0) {
+            throw new AppException(ErrorCode.INSUFFICIENT_PAYMENT_AMOUNT);
+        }
+    }
 }

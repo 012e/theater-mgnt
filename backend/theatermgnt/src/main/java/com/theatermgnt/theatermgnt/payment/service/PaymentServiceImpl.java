@@ -19,6 +19,7 @@ import com.theatermgnt.theatermgnt.payment.dto.response.PaymentResponse;
 import com.theatermgnt.theatermgnt.payment.entity.Payment;
 import com.theatermgnt.theatermgnt.payment.mapper.PaymentMapper;
 import com.theatermgnt.theatermgnt.payment.repository.PaymentRepository;
+import com.theatermgnt.theatermgnt.caculate.CalculateService;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +35,8 @@ public class PaymentServiceImpl implements PaymentService {
     PaymentRepository paymentRepository;
 
     PaymentMapper paymentMapper;
+
+    CalculateService calculateService;
 
     @Override
     public PaymentResponse createPayment(PaymentCreationRequest request) {
@@ -79,6 +82,7 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public PaymentResponse processCashPayment(PaymentCreationRequest request) {
         validateCommon(request);
+        validatePaymentAmount(request);
         // For cash, mark completed immediately (business rule could vary)
         Payment payment = paymentMapper.toPayment(request);
         payment.setMethod(com.theatermgnt.theatermgnt.payment.enums.PaymentMethod.CASH);
@@ -90,6 +94,7 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public PaymentResponse processCreditCardPayment(PaymentCreationRequest request, CardDetails cardDetails) {
         validateCommon(request);
+        validatePaymentAmount(request);
         validateCardDetails(cardDetails);
 
         Payment payment = paymentMapper.toPayment(request);
@@ -105,6 +110,7 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public PaymentResponse processEwalletPayment(PaymentCreationRequest request, EwalletDetails ewalletDetails) {
         validateCommon(request);
+        validatePaymentAmount(request);
         validateEwalletDetails(ewalletDetails);
 
         Payment payment = paymentMapper.toPayment(request);
@@ -120,6 +126,7 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public PaymentResponse processBankTransferPayment(PaymentCreationRequest request, BankTransferDetails bankDetails) {
         validateCommon(request);
+        validatePaymentAmount(request);
         validateBankTransferDetails(bankDetails);
 
         Payment payment = paymentMapper.toPayment(request);
@@ -258,5 +265,24 @@ public class PaymentServiceImpl implements PaymentService {
         } catch (DateTimeParseException e) {
             return false;
         }
+    }
+
+    /**
+     * Validate that the transferred payment amount is sufficient after applying discounts
+     * @param request The payment creation request containing amount, customerId, and originalPrice
+     * @throws AppException if the transferred amount is insufficient
+     */
+    private void validatePaymentAmount(PaymentCreationRequest request) {
+        // If originalPrice is not provided, skip discount validation
+        if (request.getOriginalPrice() == null || request.getCustomerId() == null) {
+            return;
+        }
+
+        // Use CalculateService to validate if transferred amount is sufficient
+        calculateService.validatePaymentAmountSufficient(
+            request.getOriginalPrice(),
+            request.getAmount(),
+            request.getCustomerId()
+        );
     }
 }

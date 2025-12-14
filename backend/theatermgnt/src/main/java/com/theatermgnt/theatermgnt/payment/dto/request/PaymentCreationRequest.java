@@ -17,4 +17,7 @@ public class PaymentCreationRequest {
     BigDecimal amount;
 
     String customerId;
+
+    // Original price before discount (for validation purposes)
+    BigDecimal originalPrice;
 }
