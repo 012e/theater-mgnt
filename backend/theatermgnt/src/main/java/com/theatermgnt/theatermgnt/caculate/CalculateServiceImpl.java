@@ -37,7 +37,8 @@ public class CalculateServiceImpl implements CalculateService {
     }
 
     @Override
-    public boolean isPaymentAmountSufficient(BigDecimal originalPrice, BigDecimal transferredAmount, String usernameOrEmail) {
+    public boolean isPaymentAmountSufficient(
+            BigDecimal originalPrice, BigDecimal transferredAmount, String usernameOrEmail) {
         if (transferredAmount == null || transferredAmount.compareTo(BigDecimal.ZERO) <= 0) {
             return false;
         }
@@ -48,7 +49,8 @@ public class CalculateServiceImpl implements CalculateService {
     }
 
     @Override
-    public void validatePaymentAmountSufficient(BigDecimal originalPrice, BigDecimal transferredAmount, String usernameOrEmail) {
+    public void validatePaymentAmountSufficient(
+            BigDecimal originalPrice, BigDecimal transferredAmount, String usernameOrEmail) {
         if (transferredAmount == null || transferredAmount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new AppException(ErrorCode.INVALID_PAYMENT_AMOUNT);
         }

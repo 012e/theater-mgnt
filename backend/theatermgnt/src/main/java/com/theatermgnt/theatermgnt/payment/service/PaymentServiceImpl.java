@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.theatermgnt.theatermgnt.caculate.CalculateService;
 import com.theatermgnt.theatermgnt.common.exception.AppException;
 import com.theatermgnt.theatermgnt.common.exception.ErrorCode;
 import com.theatermgnt.theatermgnt.payment.dto.request.BankTransferDetails;
@@ -19,7 +20,6 @@ import com.theatermgnt.theatermgnt.payment.dto.response.PaymentResponse;
 import com.theatermgnt.theatermgnt.payment.entity.Payment;
 import com.theatermgnt.theatermgnt.payment.mapper.PaymentMapper;
 import com.theatermgnt.theatermgnt.payment.repository.PaymentRepository;
-import com.theatermgnt.theatermgnt.caculate.CalculateService;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -280,9 +280,6 @@ public class PaymentServiceImpl implements PaymentService {
 
         // Use CalculateService to validate if transferred amount is sufficient
         calculateService.validatePaymentAmountSufficient(
-            request.getOriginalPrice(),
-            request.getAmount(),
-            request.getCustomerId()
-        );
+                request.getOriginalPrice(), request.getAmount(), request.getCustomerId());
     }
 }
