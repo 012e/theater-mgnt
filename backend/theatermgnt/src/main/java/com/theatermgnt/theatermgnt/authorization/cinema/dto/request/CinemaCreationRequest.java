@@ -1,4 +1,4 @@
-package com.theatermgnt.theatermgnt.cinema.dto.request;
+package com.theatermgnt.theatermgnt.authorization.cinema.dto.request;
 
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;

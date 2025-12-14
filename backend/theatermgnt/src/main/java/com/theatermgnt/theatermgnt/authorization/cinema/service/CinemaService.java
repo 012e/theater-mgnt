@@ -1,10 +1,10 @@
-package com.theatermgnt.theatermgnt.cinema.service;
+package com.theatermgnt.theatermgnt.authorization.cinema.service;
 
 import java.util.List;
 
-import com.theatermgnt.theatermgnt.cinema.dto.request.CinemaCreationRequest;
-import com.theatermgnt.theatermgnt.cinema.dto.request.CinemaUpdateRequest;
-import com.theatermgnt.theatermgnt.cinema.dto.response.CinemaResponse;
+import com.theatermgnt.theatermgnt.authorization.cinema.dto.request.CinemaCreationRequest;
+import com.theatermgnt.theatermgnt.authorization.cinema.dto.request.CinemaUpdateRequest;
+import com.theatermgnt.theatermgnt.authorization.cinema.dto.response.CinemaResponse;
 
 public interface CinemaService {
     CinemaResponse createCinema(CinemaCreationRequest request);

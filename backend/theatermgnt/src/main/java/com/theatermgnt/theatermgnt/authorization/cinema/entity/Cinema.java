@@ -1,4 +1,4 @@
-package com.theatermgnt.theatermgnt.cinema.entity;
+package com.theatermgnt.theatermgnt.authorization.cinema.entity;
 
 import jakarta.persistence.*;
 
