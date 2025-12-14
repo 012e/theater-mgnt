@@ -62,12 +62,10 @@ class ScreeningSeatServiceImplTest {
     @Test
     void getScreeningSeatsByScreeningId_nullId_returnEmptyList() {
         // given
-        when(screeningSeatRepository.findByScreeningId(null))
-                .thenReturn(Collections.emptyList());
+        when(screeningSeatRepository.findByScreeningId(null)).thenReturn(Collections.emptyList());
 
         // when
-        List<ScreeningSeatResponse> result =
-                screeningSeatService.getScreeningSeatsByScreeningId(null);
+        List<ScreeningSeatResponse> result = screeningSeatService.getScreeningSeatsByScreeningId(null);
 
         // then
         assertNotNull(result);
@@ -77,16 +75,13 @@ class ScreeningSeatServiceImplTest {
         verifyNoInteractions(screeningSeatMapper);
     }
 
-
     @Test
     void getScreeningSeatsByScreeningId_emptyId_returnEmptyList() {
         // given
-        when(screeningSeatRepository.findByScreeningId(""))
-                .thenReturn(Collections.emptyList());
+        when(screeningSeatRepository.findByScreeningId("")).thenReturn(Collections.emptyList());
 
         // when
-        List<ScreeningSeatResponse> result =
-                screeningSeatService.getScreeningSeatsByScreeningId("");
+        List<ScreeningSeatResponse> result = screeningSeatService.getScreeningSeatsByScreeningId("");
 
         // then
         assertNotNull(result);
@@ -95,5 +90,4 @@ class ScreeningSeatServiceImplTest {
         verify(screeningSeatRepository).findByScreeningId("");
         verifyNoInteractions(screeningSeatMapper);
     }
-
 }

@@ -66,12 +66,10 @@ public class PriceConfigServiceImplTest {
     @Test
     void getPriceConfigsBySeatType_nullId_returnEmptyList() {
         // given
-        when(priceConfigRepository.findBySeatTypeId(null))
-                .thenReturn(Collections.emptyList());
+        when(priceConfigRepository.findBySeatTypeId(null)).thenReturn(Collections.emptyList());
 
         // when
-        List<PriceConfigResponse> result =
-                priceConfigService.getPriceConfigsBySeatType(null);
+        List<PriceConfigResponse> result = priceConfigService.getPriceConfigsBySeatType(null);
 
         // then
         assertNotNull(result);
@@ -84,12 +82,10 @@ public class PriceConfigServiceImplTest {
     @Test
     void getPriceConfigsBySeatType_emptyId_returnEmptyList() {
         // given
-        when(priceConfigRepository.findBySeatTypeId(""))
-                .thenReturn(Collections.emptyList());
+        when(priceConfigRepository.findBySeatTypeId("")).thenReturn(Collections.emptyList());
 
         // when
-        List<PriceConfigResponse> result =
-                priceConfigService.getPriceConfigsBySeatType("");
+        List<PriceConfigResponse> result = priceConfigService.getPriceConfigsBySeatType("");
 
         // then
         assertNotNull(result);

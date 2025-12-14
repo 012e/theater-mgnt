@@ -53,6 +53,7 @@ public class SeatTypeServiceImpl implements SeatTypeService {
                 .orElseThrow(() -> new AppException(ErrorCode.SEATTYPE_NOT_EXISTED)));
     }
 
+
     @Override
     public void deleteSeatType(String seatTypeId) {
         seatTypeRepository.deleteById(seatTypeId);

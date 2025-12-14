@@ -234,35 +234,47 @@ class SeatTypeServiceImplTest {
 
     @Test
     void getSeatType_nullSeatTypeId_throwNullPointerException() {
-        when(seatTypeRepository.findById(null))
-                .thenThrow(NullPointerException.class);
+        when(seatTypeRepository.findById(null)).thenThrow(NullPointerException.class);
 
-        assertThrows(NullPointerException.class, () ->
-                seatTypeService.getSeatType(null)
-        );
+        assertThrows(NullPointerException.class, () -> seatTypeService.getSeatType(null));
     }
 
     /// DEFECT 1:
     @Test
     void getSeatType_nullSeatTypeId_shouldThrowBadRequest() {
-        when(seatTypeRepository.findById(null))
-                .thenThrow(IllegalArgumentException.class);
+        when(seatTypeRepository.findById(null)).thenThrow(IllegalArgumentException.class);
 
-        assertThrows(IllegalArgumentException.class, () ->
-                seatTypeService.getSeatType(null)
-        );
+        assertThrows(IllegalArgumentException.class, () -> seatTypeService.getSeatType(null));
     }
 
     /// DEFECT 2
     @Test
     void getSeatType_emptySeatTypeId_shouldBeRejected() {
-        when(seatTypeRepository.findById(""))
-                .thenReturn(Optional.empty());
+        when(seatTypeRepository.findById("")).thenReturn(Optional.empty());
 
-        AppException ex = assertThrows(AppException.class, () ->
-                seatTypeService.getSeatType("")
-        );
+        AppException ex = assertThrows(AppException.class, () -> seatTypeService.getSeatType(""));
 
         assertEquals(ErrorCode.SEATTYPE_NOT_EXISTED, ex.getErrorCode());
+    }
+
+    @Test
+    void getSeatType_emptyId_throwException() {
+        // given
+        String seatTypeId = "";
+
+        when(seatTypeRepository.findById(seatTypeId))
+                .thenReturn(Optional.empty());
+
+        // when
+        AppException exception = assertThrows(
+                AppException.class,
+                () -> seatTypeService.getSeatType(seatTypeId)
+        );
+
+        // then
+        assertEquals(ErrorCode.SEATTYPE_NOT_EXISTED, exception.getErrorCode());
+
+        verify(seatTypeRepository).findById(seatTypeId);
+        verifyNoInteractions(seatTypeMapper);
     }
 }
