@@ -30,6 +30,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -120,10 +121,29 @@ public class ScreeningService {
                 .toList();
     }
 
-    public List<ScreeningResponse> getScreenings() {
-        return screeningRepository.findAll().stream()
-                .map(screeningMapper::toScreeningResponse)
-                .toList();
+//    public List<ScreeningResponse> getScreenings() {
+//        return screeningRepository.findAll().stream()
+//                .map(screeningMapper::toScreeningResponse)
+//                .toList();
+//    }
+public List<ScreeningResponse> getScreenings(LocalDateTime queryDate) {
+    List<Screening> allScreenings = screeningRepo.findAllByDate(queryDate.toLocalDate());
+
+    // --- BUG LOGIC HERE ---
+    // Developer sai sót: Chỉ lọc những phim có startTime > NOW()
+    // Dẫn đến việc phim 'ongoing' (bắt đầu cách đây 30p) bị loại bỏ.
+    return allScreenings.stream()
+            .filter(s -> s.getStartTime().isAfter(LocalDateTime.now())) // <== LỖI TẠI ĐÂY
+            .filter(s -> !s.getStatus().equals("cancelled"))
+            .map(this::convertToDTO)
+            .collect(Collectors.toList());
+}
+
+    private ScreeningResponse convertToDTO(Screening s) {
+        // Giả lập logic tính toán ghế
+        int totalSeats = 100;
+        int soldSeats = seatRepository.count(s.getId());
+        return new ScreeningDTO(s.getMovieName(), s.getStartTime(), totalSeats - soldSeats);
     }
 
     public ScreeningResponse getScreening(String screeningId) {
