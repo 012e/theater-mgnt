@@ -62,4 +62,40 @@ public class PriceConfigServiceImplTest {
 
         verify(priceConfigMapper, never()).toPriceConfigResponse(any());
     }
+
+    @Test
+    void getPriceConfigsBySeatType_nullId_returnEmptyList() {
+        // given
+        when(priceConfigRepository.findBySeatTypeId(null))
+                .thenReturn(Collections.emptyList());
+
+        // when
+        List<PriceConfigResponse> result =
+                priceConfigService.getPriceConfigsBySeatType(null);
+
+        // then
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+
+        verify(priceConfigRepository).findBySeatTypeId(null);
+        verifyNoInteractions(priceConfigMapper);
+    }
+
+    @Test
+    void getPriceConfigsBySeatType_emptyId_returnEmptyList() {
+        // given
+        when(priceConfigRepository.findBySeatTypeId(""))
+                .thenReturn(Collections.emptyList());
+
+        // when
+        List<PriceConfigResponse> result =
+                priceConfigService.getPriceConfigsBySeatType("");
+
+        // then
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+
+        verify(priceConfigRepository).findBySeatTypeId("");
+        verifyNoInteractions(priceConfigMapper);
+    }
 }

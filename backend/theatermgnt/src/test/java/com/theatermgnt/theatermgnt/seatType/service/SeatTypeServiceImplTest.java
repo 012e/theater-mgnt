@@ -231,4 +231,38 @@ class SeatTypeServiceImplTest {
         AppException ex = assertThrows(AppException.class, () -> seatTypeService.updateSeatType("nope", req));
         assertEquals(ErrorCode.SEATTYPE_NOT_EXISTED, ex.getErrorCode());
     }
+
+    @Test
+    void getSeatType_nullSeatTypeId_throwNullPointerException() {
+        when(seatTypeRepository.findById(null))
+                .thenThrow(NullPointerException.class);
+
+        assertThrows(NullPointerException.class, () ->
+                seatTypeService.getSeatType(null)
+        );
+    }
+
+    /// DEFECT 1:
+    @Test
+    void getSeatType_nullSeatTypeId_shouldThrowBadRequest() {
+        when(seatTypeRepository.findById(null))
+                .thenThrow(IllegalArgumentException.class);
+
+        assertThrows(IllegalArgumentException.class, () ->
+                seatTypeService.getSeatType(null)
+        );
+    }
+
+    /// DEFECT 2
+    @Test
+    void getSeatType_emptySeatTypeId_shouldBeRejected() {
+        when(seatTypeRepository.findById(""))
+                .thenReturn(Optional.empty());
+
+        AppException ex = assertThrows(AppException.class, () ->
+                seatTypeService.getSeatType("")
+        );
+
+        assertEquals(ErrorCode.SEATTYPE_NOT_EXISTED, ex.getErrorCode());
+    }
 }
