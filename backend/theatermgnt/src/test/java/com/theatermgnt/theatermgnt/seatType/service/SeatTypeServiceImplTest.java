@@ -3,10 +3,7 @@ package com.theatermgnt.theatermgnt.seatType.service;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -151,31 +148,33 @@ class SeatTypeServiceImplTest {
     }
 
     @Test
-    void getSeatType_found_returnsMapped() {
-        SeatType s = SeatType.builder()
-                .id("x")
-                .typeName("X")
-                .basePriceModifier(BigDecimal.TEN)
-                .build();
-        SeatTypeResponse r = SeatTypeResponse.builder()
-                .id("x")
-                .typeName("X")
-                .basePriceModifier(BigDecimal.TEN)
-                .build();
+    void getSeatType_success() {
+        String seatTypeId = "SEAT-VIP";
 
-        when(seatTypeRepository.findById("x")).thenReturn(Optional.of(s));
-        when(seatTypeMapper.toSeatTypeResponse(s)).thenReturn(r);
+        SeatType seatType = new SeatType();
+        SeatTypeResponse response = new SeatTypeResponse();
 
-        SeatTypeResponse out = seatTypeService.getSeatType("x");
-        assertNotNull(out);
-        assertEquals("x", out.getId());
+        when(seatTypeRepository.findById(seatTypeId)).thenReturn(Optional.of(seatType));
+        when(seatTypeMapper.toSeatTypeResponse(seatType)).thenReturn(response);
+
+        SeatTypeResponse result = seatTypeService.getSeatType(seatTypeId);
+
+        assertEquals(response, result);
+
+        verify(seatTypeMapper).toSeatTypeResponse(seatType);
     }
 
     @Test
-    void getSeatType_notFound_throws() {
-        when(seatTypeRepository.findById("missing")).thenReturn(Optional.empty());
-        AppException ex = assertThrows(AppException.class, () -> seatTypeService.getSeatType("missing"));
-        assertEquals(ErrorCode.SEATTYPE_NOT_EXISTED, ex.getErrorCode());
+    void getSeatType_notFound_throwException() {
+        String seatTypeId = "SEAT-NOT-EXIST";
+
+        when(seatTypeRepository.findById(seatTypeId)).thenReturn(Optional.empty());
+
+        AppException exception = assertThrows(AppException.class, () -> seatTypeService.getSeatType(seatTypeId));
+
+        assertEquals(ErrorCode.SEATTYPE_NOT_EXISTED, exception.getErrorCode());
+
+        verify(seatTypeMapper, never()).toSeatTypeResponse(any());
     }
 
     @Test
