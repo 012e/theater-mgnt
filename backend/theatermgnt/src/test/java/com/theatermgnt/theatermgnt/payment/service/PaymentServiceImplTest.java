@@ -61,7 +61,6 @@ class PaymentServiceImplTest {
         sampleRequest = new PaymentCreationRequest();
         sampleRequest.setAmount(BigDecimal.valueOf(12.5));
         sampleRequest.setCurrency("USD");
-        sampleRequest.setMethod(PaymentMethod.CREDIT_CARD);
         sampleRequest.setTransactionId("tx-123");
 
         samplePayment = Payment.builder()

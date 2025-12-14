@@ -22,9 +22,6 @@ public class PaymentCreationRequest {
     @NotBlank(message = "INVALID_PAYMENT_CURRENCY")
     String currency;
 
-    @NotNull(message = "INVALID_PAYMENT_METHOD")
-    PaymentMethod method;
-
     String customerId;
 
     String transactionId;
