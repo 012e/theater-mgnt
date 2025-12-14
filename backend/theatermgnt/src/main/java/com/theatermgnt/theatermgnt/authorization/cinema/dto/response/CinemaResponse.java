@@ -1,4 +1,4 @@
-package com.theatermgnt.theatermgnt.cinema.dto.response;
+package com.theatermgnt.theatermgnt.authorization.cinema.dto.response;
 
 import java.time.LocalDateTime;
 

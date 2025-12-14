@@ -1,16 +1,16 @@
-package com.theatermgnt.theatermgnt.cinema.service;
+package com.theatermgnt.theatermgnt.authorization.cinema.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.theatermgnt.theatermgnt.cinema.dto.request.CinemaCreationRequest;
-import com.theatermgnt.theatermgnt.cinema.dto.request.CinemaUpdateRequest;
-import com.theatermgnt.theatermgnt.cinema.dto.response.CinemaResponse;
-import com.theatermgnt.theatermgnt.cinema.entity.Cinema;
-import com.theatermgnt.theatermgnt.cinema.mapper.CinemaMapper;
-import com.theatermgnt.theatermgnt.cinema.repository.CinemaRepository;
+import com.theatermgnt.theatermgnt.authorization.cinema.dto.request.CinemaCreationRequest;
+import com.theatermgnt.theatermgnt.authorization.cinema.dto.request.CinemaUpdateRequest;
+import com.theatermgnt.theatermgnt.authorization.cinema.dto.response.CinemaResponse;
+import com.theatermgnt.theatermgnt.authorization.cinema.entity.Cinema;
+import com.theatermgnt.theatermgnt.authorization.cinema.mapper.CinemaMapper;
+import com.theatermgnt.theatermgnt.authorization.cinema.repository.CinemaRepository;
 import com.theatermgnt.theatermgnt.common.exception.AppException;
 import com.theatermgnt.theatermgnt.common.exception.ErrorCode;
 

@@ -16,8 +16,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.theatermgnt.theatermgnt.cinema.entity.Cinema;
-import com.theatermgnt.theatermgnt.cinema.repository.CinemaRepository;
+import com.theatermgnt.theatermgnt.authorization.cinema.entity.Cinema;
+import com.theatermgnt.theatermgnt.authorization.cinema.repository.CinemaRepository;
 import com.theatermgnt.theatermgnt.common.exception.AppException;
 import com.theatermgnt.theatermgnt.common.exception.ErrorCode;
 import com.theatermgnt.theatermgnt.room.dto.request.RoomCreationRequest;
